@@ -10,7 +10,10 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 
 // Fallback key for development if env var is missing
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51SZAMEQIL0A27oWk0WCqiIxlnzdT47TPgcws1qGyxSUvL5I7q53vmbTWM5HhC4KliQfqKlOFdvI3pvPY3ncSjWjd00zHmshrBp';
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+if (!stripeKey) {
+  console.error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing in environment variables');
+}
 const stripePromise = loadStripe(stripeKey);
 
 const translations = {
