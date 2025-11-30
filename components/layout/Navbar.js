@@ -28,14 +28,18 @@ export default function Navbar() {
     setMounted(true);
     const user = localStorage.getItem('username');
     const admin = localStorage.getItem('isAdmin');
-    if (user) setUsername(user);
+    if (user && user !== 'undefined' && user !== 'null') setUsername(user);
     if (admin) setIsAdmin(true);
 
     // Add event listener for storage changes (e.g. login/logout in other tabs)
     const handleStorageChange = () => {
         const user = localStorage.getItem('username');
         const admin = localStorage.getItem('isAdmin');
-        setUsername(user);
+        if (user && user !== 'undefined' && user !== 'null') {
+            setUsername(user);
+        } else {
+            setUsername(null);
+        }
         setIsAdmin(!!admin);
     };
 

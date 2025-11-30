@@ -2,6 +2,8 @@ import { Playfair_Display, Lato } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CartProvider } from "@/context/CartContext";
+import ReduxProvider from "@/components/ReduxProvider";
+import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -26,18 +28,22 @@ export default function RootLayout({ children }) {
       <body
         className={`${playfair.variable} ${lato.variable} antialiased bg-vintage-cream text-vintage-dark dark:bg-vintage-dark dark:text-vintage-cream transition-colors duration-300`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LanguageProvider>
-            <CartProvider>
-              {children}
-            </CartProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <ReduxProvider>
+          <SmoothScrollProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <LanguageProvider>
+                <CartProvider>
+                  {children}
+                </CartProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </SmoothScrollProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

@@ -1,12 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductsRequest } from '@/store/slices/productsSlice';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import ProductGrid from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/context/LanguageContext';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const translations = {
   EN: {
@@ -19,8 +22,9 @@ const translations = {
     heroTitle2: "Modern Artistry",
     heroText: "Discover our curated collection of premium nail supplies. From classic polishes to professional tools, we bring the vintage aesthetic to your salon.",
     shopCollection: "Shop Collection",
-    viewCatalog: "View Catalog",
-    featuredCollections: "Featured Collections"
+    featuredCollections: "Featured Collections",
+    newArrivals: "New Arrivals",
+    seeAll: "See All"
   },
   VI: {
     philosophyTitle: "Triết Lý Của Chúng Tôi",
@@ -32,15 +36,26 @@ const translations = {
     heroTitle2: "Nghệ Thuật Hiện Đại",
     heroText: "Khám phá bộ sưu tập dụng cụ làm móng cao cấp của chúng tôi. Từ sơn móng cổ điển đến dụng cụ chuyên nghiệp, chúng tôi mang thẩm mỹ vintage đến salon của bạn.",
     shopCollection: "Mua Sắm Ngay",
-    viewCatalog: "Xem Danh Mục",
-    featuredCollections: "Bộ Sưu Tập Nổi Bật"
+    featuredCollections: "Bộ Sưu Tập Nổi Bật",
+    newArrivals: "Hàng Mới Về",
+    seeAll: "Xem Tất Cả"
   }
 };
 
-export default function HomeView({ products }) {
+export default function HomeView() {
+  const dispatch = useDispatch();
+  const { items: products } = useSelector((state) => state.products);
   const { language } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState(language);
   const [isFading, setIsFading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+  
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    setIsLoggedIn(!!token);
+    dispatch(fetchProductsRequest());
+  }, [dispatch]);
   
   useEffect(() => {
     if (language !== currentLanguage) {
@@ -55,6 +70,14 @@ export default function HomeView({ products }) {
 
   const t = translations[currentLanguage];
 
+  // Display only first 8 products for the homepage
+  const featuredProducts = products.slice(0, 8);
+  
+  // Sort by createdAt descending for New Arrivals (top 4)
+  const newArrivals = [...products].sort((a, b) => {
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  }).slice(0, 4);
+
   return (
     <main className="min-h-screen flex flex-col bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
       <Navbar />
@@ -64,8 +87,7 @@ export default function HomeView({ products }) {
           title1: t.heroTitle1,
           title2: t.heroTitle2,
           description: t.heroText,
-          button1: t.shopCollection,
-          button2: t.viewCatalog
+          button1: t.shopCollection
         }} />
         
         <section className="py-12 bg-vintage-paper/50 dark:bg-vintage-dark/50 transition-colors duration-500">
@@ -77,21 +99,45 @@ export default function HomeView({ products }) {
           </div>
         </section>
 
-        <ProductGrid products={products} title={t.featuredCollections} />
+        {/* New Arrivals Section */}
+        {newArrivals.length > 0 && (
+            <div className="bg-vintage-cream dark:bg-vintage-dark pt-12 transition-colors duration-500">
+                <ProductGrid products={newArrivals} title={t.newArrivals} />
+            </div>
+        )}
+
+        <div id="catalog-section">
+            <ProductGrid products={featuredProducts} title={t.featuredCollections} />
+        </div>
         
-        <section className="bg-vintage-rose/10 dark:bg-vintage-rose/5 py-16 transition-colors duration-500">
-           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between">
-              <div className="md:w-1/2 mb-8 md:mb-0">
-                <h2 className="text-3xl font-serif font-bold text-vintage-dark dark:text-vintage-gold mb-4 transition-colors duration-500">{t.joinClubTitle}</h2>
-                <p className="text-gray-600 dark:text-gray-300 transition-colors duration-500">{t.joinClubText}</p>
-              </div>
-              <div className="md:w-1/2 flex justify-center md:justify-end">
-                 <Button className="bg-vintage-dark text-vintage-gold hover:bg-black dark:bg-vintage-gold dark:text-vintage-dark dark:hover:bg-vintage-gold-hover transition-colors duration-300">
-                   {t.signUp}
-                 </Button>
-              </div>
-           </div>
-        </section>
+        <div className="flex justify-center pb-12 bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
+            <Button 
+                onClick={() => router.push('/shop')} 
+                variant="outline" 
+                className="border-vintage-gold text-vintage-gold hover:bg-vintage-gold hover:text-white transition-all duration-300"
+            >
+                {t.seeAll}
+            </Button>
+        </div>
+
+        {!isLoggedIn && (
+            <section className="bg-vintage-rose/10 dark:bg-vintage-rose/5 py-16 transition-colors duration-500">
+               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between">
+                  <div className="md:w-1/2 mb-8 md:mb-0">
+                    <h2 className="text-3xl font-serif font-bold text-vintage-dark dark:text-vintage-gold mb-4 transition-colors duration-500">{t.joinClubTitle}</h2>
+                    <p className="text-gray-600 dark:text-gray-300 transition-colors duration-500">{t.joinClubText}</p>
+                  </div>
+                  <div className="md:w-1/2 flex justify-center md:justify-end">
+                     <Button 
+                        onClick={() => router.push('/register')}
+                        className="bg-vintage-dark text-vintage-gold hover:bg-black dark:bg-vintage-gold dark:text-vintage-dark dark:hover:bg-vintage-gold-hover transition-colors duration-300"
+                     >
+                       {t.signUp}
+                     </Button>
+                  </div>
+               </div>
+            </section>
+        )}
       </div>
 
       <Footer />

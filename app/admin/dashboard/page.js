@@ -2,17 +2,96 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { Edit, Trash2, Plus, X, Save, Upload } from 'lucide-react';
+import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+    fetchProductsRequest, addProductRequest, updateProductRequest, deleteProductRequest 
+} from '@/store/slices/productsSlice';
+import { useLanguage } from '@/context/LanguageContext';
+
+const translations = {
+  EN: {
+    title: "Product Management",
+    addProduct: "Add Product",
+    editProduct: "Edit Product",
+    addNewProduct: "Add New Product",
+    table: {
+      id: "ID",
+      name: "Name (EN/VI)",
+      category: "Category",
+      price: "Price",
+      qty: "Qty",
+      actions: "Actions"
+    },
+    form: {
+      nameEn: "Name (English)",
+      nameVi: "Name (Vietnamese)",
+      category: "Category",
+      price: "Price ($)",
+      qty: "Quantity",
+      descEn: "Description (English)",
+      descVi: "Description (Vietnamese)",
+      image: "Product Image",
+      upload: "Upload Image",
+      uploading: "Uploading...",
+      orUrl: "or enter URL below",
+      save: "Save Product",
+      cancel: "Cancel"
+    },
+    pagination: {
+      page: "Page"
+    }
+  },
+  VI: {
+    title: "Quản Lý Sản Phẩm",
+    addProduct: "Thêm Sản Phẩm",
+    editProduct: "Sửa Sản Phẩm",
+    addNewProduct: "Thêm Sản Phẩm Mới",
+    table: {
+      id: "ID",
+      name: "Tên (EN/VI)",
+      category: "Danh Mục",
+      price: "Giá",
+      qty: "SL",
+      actions: "Thao Tác"
+    },
+    form: {
+      nameEn: "Tên (Tiếng Anh)",
+      nameVi: "Tên (Tiếng Việt)",
+      category: "Danh Mục",
+      price: "Giá ($)",
+      qty: "Số Lượng",
+      descEn: "Mô Tả (Tiếng Anh)",
+      descVi: "Mô Tả (Tiếng Việt)",
+      image: "Hình Ảnh Sản Phẩm",
+      upload: "Tải Ảnh Lên",
+      uploading: "Đang Tải...",
+      orUrl: "hoặc nhập URL bên dưới",
+      save: "Lưu Sản Phẩm",
+      cancel: "Hủy"
+    },
+    pagination: {
+      page: "Trang"
+    }
+  }
+};
 
 export default function AdminDashboard() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { items: products, loading } = useSelector((state) => state.products);
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [uploading, setUploading] = useState(false);
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const router = useRouter();
 
   // Improved Auth Check
@@ -21,58 +100,21 @@ export default function AdminDashboard() {
     const userRole = localStorage.getItem('userRole');
     const isAdmin = localStorage.getItem('isAdmin');
 
-    if (!token || userRole !== 'admin' || !isAdmin) {
+    if (!token) {
       router.push('/login');
       return;
     }
-    
-    fetchProducts();
-  }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch('http://127.0.0.1:3001/products');
-      if (res.status === 401) {
-        handleLogout();
-        return;
-      }
-      const data = await res.json();
-      setProducts(data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Failed to fetch products', err);
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('isAdmin');
-    router.push('/login');
-  };
-
-  const authFetch = async (url, options = {}) => {
-    const token = localStorage.getItem('access_token');
-    const headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-    };
-    // Don't set Content-Type for FormData (upload) as browser sets boundary
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    const res = await fetch(url, { ...options, headers });
-    
-    if (res.status === 401) {
-      handleLogout();
-      throw new Error('Unauthorized');
+    if (userRole !== 'admin' || !isAdmin) {
+      router.push('/');
+      return;
     }
     
-    return res;
-  };
+    dispatch(fetchProductsRequest());
+  }, [dispatch, router]);
 
+  // Image upload remains local for simplicity, or can be moved to saga if strict adherence required.
+  // For now, keeping it here as it returns a value needed for the form immediately.
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -82,10 +124,10 @@ export default function AdminDashboard() {
     formData.append('file', file);
 
     const token = localStorage.getItem('access_token');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
 
     try {
-      // Use standard fetch for upload to avoid manual Content-Type header issues with FormData
-      const res = await fetch('http://127.0.0.1:3001/products/upload', {
+      const res = await fetch(`${API_URL}/products/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -94,7 +136,8 @@ export default function AdminDashboard() {
       });
       
       if (res.status === 401) {
-        handleLogout();
+        localStorage.removeItem('access_token'); // Handle logout
+        router.push('/login');
         return;
       }
       
@@ -110,24 +153,14 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-    
-    try {
-      await authFetch(`http://127.0.0.1:3001/products/${id}`, { method: 'DELETE' });
-      setProducts(products.filter(p => p.id !== id));
-    } catch (err) {
-      alert('Failed to delete');
-    }
+    dispatch(deleteProductRequest(id));
   };
 
-  const handleSave = async (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
-    const method = currentProduct.id ? 'PUT' : 'POST';
-    const url = currentProduct.id 
-      ? `http://127.0.0.1:3001/products/${currentProduct.id}` 
-      : 'http://127.0.0.1:3001/products';
-
+    
     const payload = {
         ...currentProduct,
         price: Number(currentProduct.price),
@@ -135,26 +168,12 @@ export default function AdminDashboard() {
         rating: Number(currentProduct.rating || 5)
     };
 
-    try {
-      const res = await authFetch(url, {
-        method,
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error('Failed to save');
-      
-      const savedProduct = await res.json();
-      
-      if (currentProduct.id) {
-        setProducts(products.map(p => p.id === savedProduct.id ? savedProduct : p));
-      } else {
-        setProducts([...products, savedProduct]);
-      }
-      setIsModalOpen(false);
-    } catch (err) {
-      alert('Failed to save product');
-      console.error(err);
+    if (currentProduct.id) {
+        dispatch(updateProductRequest(payload));
+    } else {
+        dispatch(addProductRequest(payload));
     }
+    setIsModalOpen(false);
   };
 
   const openAddModal = () => {
@@ -190,16 +209,24 @@ export default function AdminDashboard() {
     { en: 'Gloves', vi: 'Găng Tay' }
   ];
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-vintage-cream flex flex-col">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-serif font-bold text-vintage-dark">Product Management</h1>
+          <h1 className="text-3xl font-serif font-bold text-vintage-dark">{t.title}</h1>
           <Button onClick={openAddModal} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Product
+            <Plus className="w-4 h-4" /> {t.addProduct}
           </Button>
         </div>
 
@@ -207,16 +234,16 @@ export default function AdminDashboard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name (EN/VI)</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.id}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.name}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.category}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.price}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.qty}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.actions}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {currentProducts.map((product) => (
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{product.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -242,6 +269,31 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-4 mt-6">
+             <button 
+                onClick={() => paginate(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-full border border-vintage-border ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-vintage-dark hover:bg-white hover:shadow-sm'}`}
+             >
+               <ChevronLeft className="w-5 h-5" />
+             </button>
+             
+             <span className="text-sm font-medium text-gray-700">
+               {t.pagination.page} {currentPage} / {totalPages}
+             </span>
+
+             <button 
+                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-full border border-vintage-border ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-vintage-dark hover:bg-white hover:shadow-sm'}`}
+             >
+               <ChevronRight className="w-5 h-5" />
+             </button>
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Modal */}
@@ -250,7 +302,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-serif font-bold text-vintage-dark">
-                {currentProduct.id ? 'Edit Product' : 'Add New Product'}
+                {currentProduct.id ? t.editProduct : t.addNewProduct}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-6 h-6" />
@@ -261,7 +313,7 @@ export default function AdminDashboard() {
               {/* Names */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (English)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.nameEn}</label>
                   <input
                     type="text"
                     required
@@ -271,7 +323,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name (Vietnamese)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.nameVi}</label>
                   <input
                     type="text"
                     required
@@ -284,7 +336,7 @@ export default function AdminDashboard() {
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.category}</label>
                 <select
                   value={currentProduct.category?.en || 'Acrylic'}
                   onChange={(e) => {
@@ -305,7 +357,7 @@ export default function AdminDashboard() {
               {/* Price & Quantity */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.price}</label>
                   <input
                     type="number"
                     min="0"
@@ -317,7 +369,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.qty}</label>
                   <input
                     type="number"
                     min="0"
@@ -332,7 +384,7 @@ export default function AdminDashboard() {
               {/* Descriptions */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description (English)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.descEn}</label>
                   <textarea
                     rows="3"
                     value={currentProduct.description?.en || ''}
@@ -341,7 +393,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description (Vietnamese)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.descVi}</label>
                   <textarea
                     rows="3"
                     value={currentProduct.description?.vi || ''}
@@ -353,7 +405,7 @@ export default function AdminDashboard() {
 
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.image}</label>
                 <div className="flex items-center gap-4">
                     <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
                         {currentProduct.image ? (
@@ -366,7 +418,7 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                             <label className="cursor-pointer bg-white border border-vintage-border text-vintage-dark px-4 py-2 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2">
                                 <Upload className="w-4 h-4" />
-                                {uploading ? 'Uploading...' : 'Upload Image'}
+                                {uploading ? t.form.uploading : t.form.upload}
                                 <input 
                                     type="file" 
                                     className="hidden" 
@@ -375,7 +427,7 @@ export default function AdminDashboard() {
                                     disabled={uploading}
                                 />
                             </label>
-                            <span className="text-xs text-gray-500">or enter URL below</span>
+                            <span className="text-xs text-gray-500">{t.form.orUrl}</span>
                         </div>
                         <input
                             type="text"
@@ -390,10 +442,10 @@ export default function AdminDashboard() {
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                  Cancel
+                  {t.form.cancel}
                 </Button>
                 <Button type="submit" className="flex items-center gap-2" disabled={uploading}>
-                  <Save className="w-4 h-4" /> Save Product
+                  <Save className="w-4 h-4" /> {t.form.save}
                 </Button>
               </div>
             </form>

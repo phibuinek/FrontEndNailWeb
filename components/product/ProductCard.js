@@ -11,6 +11,23 @@ export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const langKey = language.toLowerCase(); // 'en' or 'vi'
 
+  const translations = {
+    EN: {
+      add: "Add",
+      soldOut: "Sold Out",
+      outOfStock: "OUT OF STOCK",
+      left: "left"
+    },
+    VI: {
+      add: "Thêm",
+      soldOut: "Hết Hàng",
+      outOfStock: "HẾT HÀNG",
+      left: "còn lại"
+    }
+  };
+
+  const t = translations[language];
+
   // Handle bilingual data or fallback to legacy string format
   const name = typeof product.name === 'object' ? product.name[langKey] : product.name;
   const description = typeof product.description === 'object' ? product.description[langKey] : product.description;
@@ -33,7 +50,7 @@ export default function ProductCard({ product }) {
                 />
                  {isOutOfStock && (
                   <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
-                    <span className="text-white font-bold px-3 py-1 border border-white">OUT OF STOCK</span>
+                    <span className="text-white font-bold px-3 py-1 border border-white">{t.outOfStock}</span>
                   </div>
                 )}
              </div>
@@ -61,7 +78,7 @@ export default function ProductCard({ product }) {
               <Star className="w-4 h-4 fill-current" /> {product.rating}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <Package className="w-3 h-3" /> {quantity} left
+              <Package className="w-3 h-3" /> {quantity} {t.left}
             </p>
           </div>
           
@@ -74,7 +91,7 @@ export default function ProductCard({ product }) {
               disabled={isOutOfStock}
               onClick={() => addToCart(product)}
             >
-              {isOutOfStock ? 'Sold Out' : 'Add'}
+              {isOutOfStock ? t.soldOut : t.add}
             </Button>
           </div>
         </div>

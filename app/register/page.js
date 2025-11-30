@@ -5,24 +5,32 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { User, Lock } from 'lucide-react';
-import { loginRequest } from '@/store/slices/authSlice';
+import { User, Lock, UserPlus } from 'lucide-react';
+import { registerRequest } from '@/store/slices/authSlice';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
   const dispatch = useDispatch();
-  const { loading, error, isAuthenticated, role } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.auth);
   const router = useRouter();
 
-  const handleLogin = (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
-    dispatch(loginRequest({ username, pass: password, router }));
+    
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+    
+    dispatch(registerRequest({ username, pass: password, router }));
   };
 
   useEffect(() => {
       if (error) {
-          alert(`Login failed: ${error}`);
+          alert(`Registration failed: ${error}`);
       }
   }, [error]);
 
@@ -32,21 +40,21 @@ export default function LoginPage() {
       
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Decorative Background Elements */}
-        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-vintage-gold/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-vintage-rose/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-vintage-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-vintage-rose/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="w-full max-w-md space-y-8 relative z-10">
           <div className="bg-white dark:bg-vintage-dark/80 backdrop-blur-sm p-8 sm:p-10 rounded-2xl shadow-xl border border-vintage-border dark:border-vintage-border/20">
             <div className="text-center mb-10">
               <h2 className="font-serif text-3xl font-bold text-vintage-dark dark:text-vintage-gold tracking-tight">
-                Welcome Back
+                Create Account
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Sign in to access your account
+                Join us to start shopping
               </p>
             </div>
 
-            <form className="space-y-6" onSubmit={handleLogin}>
+            <form className="space-y-6" onSubmit={handleRegister}>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-vintage-dark dark:text-vintage-cream mb-1">
@@ -64,7 +72,7 @@ export default function LoginPage() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="block w-full pl-10 pr-3 py-2.5 border border-vintage-border dark:border-vintage-border/30 rounded-lg bg-vintage-paper/30 dark:bg-vintage-dark/50 text-vintage-dark dark:text-vintage-cream placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-vintage-gold/50 focus:border-vintage-gold transition-all duration-200"
-                      placeholder="Enter your username"
+                      placeholder="Choose a username"
                     />
                   </div>
                 </div>
@@ -85,35 +93,40 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="block w-full pl-10 pr-3 py-2.5 border border-vintage-border dark:border-vintage-border/30 rounded-lg bg-vintage-paper/30 dark:bg-vintage-dark/50 text-vintage-dark dark:text-vintage-cream placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-vintage-gold/50 focus:border-vintage-gold transition-all duration-200"
-                      placeholder="Enter your password"
+                      placeholder="Create a password"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-vintage-dark dark:text-vintage-cream mb-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2.5 border border-vintage-border dark:border-vintage-border/30 rounded-lg bg-vintage-paper/30 dark:bg-vintage-dark/50 text-vintage-dark dark:text-vintage-cream placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-vintage-gold/50 focus:border-vintage-gold transition-all duration-200"
+                      placeholder="Confirm your password"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-vintage-gold focus:ring-vintage-gold border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-gray-600 dark:text-gray-400">
-                    Remember me
-                  </label>
-                </div>
-                <a href="#" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors">
-                  Forgot password?
-                </a>
-              </div>
-
               <Button 
                 type="submit" 
-                className="w-full py-3 text-base font-medium shadow-lg shadow-vintage-gold/20 hover:shadow-vintage-gold/40 transition-all duration-300"
+                className="w-full py-3 text-base font-medium shadow-lg shadow-vintage-gold/20 hover:shadow-vintage-gold/40 transition-all duration-300 flex items-center justify-center gap-2"
                 disabled={loading}
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                <UserPlus className="w-5 h-5" />
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </Button>
 
               <div className="relative mt-6">
@@ -122,24 +135,14 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-vintage-dark/80 text-gray-500">
-                    Or continue with
+                    Already have an account?
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                 <button type="button" className="flex items-center justify-center px-4 py-2 border border-vintage-border dark:border-vintage-border/30 rounded-lg shadow-sm bg-white dark:bg-vintage-dark hover:bg-gray-50 dark:hover:bg-vintage-border/10 transition-colors">
-                   <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream">Google</span>
-                 </button>
-                 <button type="button" className="flex items-center justify-center px-4 py-2 border border-vintage-border dark:border-vintage-border/30 rounded-lg shadow-sm bg-white dark:bg-vintage-dark hover:bg-gray-50 dark:hover:bg-vintage-border/10 transition-colors">
-                   <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream">Facebook</span>
-                 </button>
-              </div>
-
-              <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
-                <a href="/register" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors">
-                  Sign up
+              <p className="mt-4 text-center text-sm">
+                <a href="/login" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors">
+                  Sign in instead
                 </a>
               </p>
             </form>

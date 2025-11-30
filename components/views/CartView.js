@@ -6,7 +6,9 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const translations = {
   EN: {
@@ -18,7 +20,8 @@ const translations = {
     quantity: "Quantity",
     total: "Total",
     subtotal: "Subtotal",
-    checkout: "Proceed to Checkout"
+    checkout: "Proceed to Checkout",
+    loginToCheckout: "Login to Checkout"
   },
   VI: {
     title: "Giỏ Hàng Của Bạn",
@@ -29,7 +32,8 @@ const translations = {
     quantity: "Số Lượng",
     total: "Tổng Cộng",
     subtotal: "Tạm Tính",
-    checkout: "Tiến Hành Thanh Toán"
+    checkout: "Tiến Hành Thanh Toán",
+    loginToCheckout: "Đăng Nhập Để Thanh Toán"
   }
 };
 
@@ -38,8 +42,28 @@ export default function CartView() {
   const { cart, removeFromCart, updateQuantity } = useCart();
   const t = translations[language];
   const langKey = language.toLowerCase();
+  const router = useRouter();
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const token = localStorage.getItem('access_token');
+    setIsLoggedIn(!!token);
+  }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  const handleCheckout = () => {
+    if (isLoggedIn) {
+        router.push('/checkout');
+    } else {
+        router.push('/login');
+    }
+  };
+
+  if (!mounted) return null;
 
   return (
     <main className="min-h-screen flex flex-col bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
@@ -89,14 +113,14 @@ export default function CartView() {
                                     className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors"
                                     disabled={item.quantity <= 1}
                                  >
-                                   <Minus className="w-3 h-3" />
+                                   <Minus className="w-3 h-3 text-vintage-dark dark:text-vintage-cream" />
                                  </button>
-                                 <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                                 <span className="w-8 text-center text-sm font-medium text-vintage-dark dark:text-vintage-cream">{item.quantity}</span>
                                  <button 
                                     onClick={() => updateQuantity(item.id, 1)}
                                     className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors"
                                  >
-                                   <Plus className="w-3 h-3" />
+                                   <Plus className="w-3 h-3 text-vintage-dark dark:text-vintage-cream" />
                                  </button>
                                </div>
                                
@@ -134,7 +158,16 @@ export default function CartView() {
                         <span className="text-xl font-bold text-vintage-gold">${subtotal.toFixed(2)}</span>
                       </div>
                       
-                      <Button className="w-full py-3 text-lg">{t.checkout}</Button>
+                      <Button 
+                        className={`w-full py-3 text-lg ${!isLoggedIn ? 'opacity-90' : ''}`}
+                        onClick={handleCheckout}
+                      >
+                         {isLoggedIn ? t.checkout : (
+                             <span className="flex items-center gap-2 justify-center">
+                                 <Lock className="w-4 h-4" /> {t.loginToCheckout}
+                             </span>
+                         )}
+                      </Button>
                     </div>
                   </div>
                </div>

@@ -32,9 +32,54 @@
 }
 
 /* Global Styles for Vintage Feel */
+html {
+  /* Removed scroll-behavior: smooth because Lenis handles it */
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom Scrollbar for Professional Look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-vintage-cream);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-vintage-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-vintage-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-vintage-gold-hover);
+}
+
 body {
-  background-color: var(--color-vintage-cream);
-  color: var(--color-vintage-dark);
   font-family: var(--font-sans);
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

@@ -7,24 +7,53 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [mounted, setMounted] = useState(false);
+  const [username, setUsername] = useState(null);
 
+  // Helper to get the storage key based on current user
+  const getCartKey = (user) => `nail_cart_${user || 'guest'}`;
+
+  // 1. Handle Auth Changes & Initial Load
   useEffect(() => {
-    const savedCart = localStorage.getItem('nail_cart');
+    const updateAuth = () => {
+        const user = localStorage.getItem('username');
+        setUsername(user);
+    };
+    
+    // Initial check
+    updateAuth();
+    setMounted(true);
+
+    // Listen for login/logout
+    window.addEventListener('auth-change', updateAuth);
+    return () => window.removeEventListener('auth-change', updateAuth);
+  }, []);
+
+  // 2. Load Cart when Username Changes (or on Mount)
+  useEffect(() => {
+    if (!mounted) return;
+
+    const key = getCartKey(username);
+    const savedCart = localStorage.getItem(key);
+    
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
       } catch (e) {
         console.error("Failed to parse cart", e);
+        setCart([]);
       }
+    } else {
+      setCart([]); // Reset if no cart exists for this user
     }
-    setMounted(true);
-  }, []);
+  }, [username, mounted]);
 
+  // 3. Save Cart when Cart Changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('nail_cart', JSON.stringify(cart));
-    }
-  }, [cart, mounted]);
+    if (!mounted) return;
+    
+    const key = getCartKey(username);
+    localStorage.setItem(key, JSON.stringify(cart));
+  }, [cart, username, mounted]);
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -34,8 +63,6 @@ export function CartProvider({ children }) {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      // Ensure we store the necessary localized data structure or current language string
-      // For simplicity in cart, let's store the full object so we can localize in CartView too
       return [...prev, { ...product, quantity: 1 }];
     });
   };
@@ -72,4 +99,3 @@ export function CartProvider({ children }) {
 export function useCart() {
   return useContext(CartContext);
 }
-

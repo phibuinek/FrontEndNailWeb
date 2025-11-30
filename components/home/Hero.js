@@ -1,13 +1,23 @@
 import { Button } from '../ui/Button';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export default function Hero({ texts }) {
+  const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const t = texts || {
     title1: "Timeless Beauty for",
     title2: "Modern Artistry",
     description: "Discover our curated collection of premium nail supplies. From classic polishes to professional tools, we bring the vintage aesthetic to your salon.",
-    button1: "Shop Collection",
-    button2: "View Catalog"
+    button1: "Shop Collection"
   };
 
   return (
@@ -26,10 +36,7 @@ export default function Hero({ texts }) {
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                 <div className="rounded-md shadow">
-                  <Button size="lg" className="w-full sm:w-auto">{t.button1}</Button>
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-3">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">{t.button2}</Button>
+                  <Button onClick={() => router.push('/shop')} size="lg" className="w-full sm:w-auto">{t.button1}</Button>
                 </div>
               </div>
             </div>
@@ -38,10 +45,10 @@ export default function Hero({ texts }) {
       </div>
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 h-56 w-full sm:h-72 md:h-96 lg:h-full relative">
         <Image 
-          src="/vintageHero.png" 
+          src={mounted && resolvedTheme === 'dark' ? "/vintageHero.png" : "/hero.jpg"} 
           alt="Vintage Salon Ambience" 
           fill
-          className="object-cover"
+          className="object-cover transition-opacity duration-500"
           priority
           unoptimized
         />

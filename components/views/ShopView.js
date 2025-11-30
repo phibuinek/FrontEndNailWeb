@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductsRequest } from '@/store/slices/productsSlice';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useLanguage } from '@/context/LanguageContext';
 import { ChevronLeft, ChevronRight, Filter, ArrowUpDown } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const translations = {
   EN: {
@@ -36,21 +39,27 @@ const translations = {
   }
 };
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
-export default function ShopView({ products }) {
+export default function ShopView() {
+  const dispatch = useDispatch();
+  const { items: products, loading } = useSelector((state) => state.products);
   const { language } = useLanguage();
   const langKey = language.toLowerCase();
   const t = translations[language];
   
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    dispatch(fetchProductsRequest());
+  }, [dispatch]);
 
   // Extract unique categories from products
   const categories = useMemo(() => {
@@ -80,17 +89,16 @@ export default function ShopView({ products }) {
     } else if (sortBy === 'priceDesc') {
       result.sort((a, b) => b.price - a.price);
     } else {
-      // Default 'newest' - assuming id or created date (using id here as proxy for creation order if date missing)
+      // Default 'newest'
       result.sort((a, b) => b.id - a.id);
     }
 
     return result;
   }, [products, selectedCategory, sortBy, langKey]);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory, sortBy]);
+  // Reset to page 1 when filters change logic removed in favor of explicit reset in handlers
+  // to avoid initial load reset issues when deep linking.
+
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -99,12 +107,16 @@ export default function ShopView({ products }) {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('page', newPage);
+      router.push(`/shop?${params.toString()}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return <div className="min-h-screen bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500" />;
+  }
 
   return (
     <main className="min-h-screen flex flex-col bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
@@ -129,7 +141,12 @@ export default function ShopView({ products }) {
                 <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.filterTitle}:</span>
                 <select 
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedCategory(e.target.value);
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('page', '1');
+                        router.push(`/shop?${params.toString()}`);
+                    }}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="All" className="bg-white dark:bg-vintage-dark">{t.allCategories}</option>
@@ -145,7 +162,12 @@ export default function ShopView({ products }) {
                 <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.sortTitle}:</span>
                 <select 
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => {
+                        setSortBy(e.target.value);
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('page', '1');
+                        router.push(`/shop?${params.toString()}`);
+                    }}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="newest" className="bg-white dark:bg-vintage-dark">{t.sortNewest}</option>
@@ -157,7 +179,9 @@ export default function ShopView({ products }) {
 
         {/* Product Grid */}
         <div className="min-h-[400px]">
-            {displayedProducts.length > 0 ? (
+            {loading && products.length === 0 ? (
+                 <div className="flex justify-center items-center h-64">Loading...</div>
+            ) : displayedProducts.length > 0 ? (
                  <ProductGrid products={displayedProducts} title="" />
             ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-vintage-dark dark:text-vintage-cream opacity-70">
