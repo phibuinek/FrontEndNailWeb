@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Vintage Color Palette */
+  --color-vintage-cream: #FDFBF7;
+  --color-vintage-paper: #F4EFE9;
+  --color-vintage-dark: #3D3D3D;
+  --color-vintage-brown: #4A3B32;
+  --color-vintage-gold: #C19A6B;
+  --color-vintage-gold-hover: #A88455;
+  --color-vintage-rose: #8C5E58;
+  --color-vintage-sage: #5F7161;
+  --color-vintage-border: #E5E0D8;
+  
+  --font-playfair: var(--font-playfair);
+  --font-lato: var(--font-lato);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --color-vintage-cream: var(--color-vintage-cream);
+  --color-vintage-paper: var(--color-vintage-paper);
+  --color-vintage-dark: var(--color-vintage-dark);
+  --color-vintage-brown: var(--color-vintage-brown);
+  --color-vintage-gold: var(--color-vintage-gold);
+  --color-vintage-gold-hover: var(--color-vintage-gold-hover);
+  --color-vintage-rose: var(--color-vintage-rose);
+  --color-vintage-sage: var(--color-vintage-sage);
+  --color-vintage-border: var(--color-vintage-border);
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-lato);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Global Styles for Vintage Feel */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-vintage-cream);
+  color: var(--color-vintage-dark);
+  font-family: var(--font-sans);
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 500ms;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+.vintage-border {
+  border: 1px solid var(--color-vintage-border);
+}
+
+.vintage-shadow {
+  box-shadow: 2px 2px 0px rgba(74, 59, 50, 0.1);
+}
+
+/* Add global transition for common elements */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Language Fade Animation */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
