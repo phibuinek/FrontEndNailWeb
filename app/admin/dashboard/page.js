@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight, Package, ShoppingBag } from 'lucide-react';
 import { 
     fetchProductsRequest, addProductRequest, updateProductRequest, deleteProductRequest 
 } from '@/store/slices/productsSlice';
@@ -13,7 +13,11 @@ import { useLanguage } from '@/context/LanguageContext';
 
 const translations = {
   EN: {
-    title: "Product Management",
+    title: "Admin Dashboard",
+    tabs: {
+        products: "Products",
+        orders: "Orders"
+    },
     addProduct: "Add Product",
     editProduct: "Edit Product",
     addNewProduct: "Add New Product",
@@ -24,6 +28,15 @@ const translations = {
       price: "Price",
       qty: "Qty",
       actions: "Actions"
+    },
+    orderTable: {
+        id: "Order ID",
+        date: "Date",
+        customer: "Customer",
+        items: "Items",
+        total: "Total",
+        payment: "Payment",
+        status: "Status"
     },
     form: {
       nameEn: "Name (English)",
@@ -45,7 +58,11 @@ const translations = {
     }
   },
   VI: {
-    title: "Quản Lý Sản Phẩm",
+    title: "Trang Quản Trị",
+    tabs: {
+        products: "Sản Phẩm",
+        orders: "Đơn Hàng"
+    },
     addProduct: "Thêm Sản Phẩm",
     editProduct: "Sửa Sản Phẩm",
     addNewProduct: "Thêm Sản Phẩm Mới",
@@ -56,6 +73,15 @@ const translations = {
       price: "Giá",
       qty: "SL",
       actions: "Thao Tác"
+    },
+    orderTable: {
+        id: "Mã Đơn",
+        date: "Ngày",
+        customer: "Khách Hàng",
+        items: "Sản Phẩm",
+        total: "Tổng Tiền",
+        payment: "Thanh Toán",
+        status: "Trạng Thái"
     },
     form: {
       nameEn: "Tên (Tiếng Anh)",
@@ -80,14 +106,19 @@ const translations = {
 
 export default function AdminDashboard() {
   const dispatch = useDispatch();
-  const { items: products, loading } = useSelector((state) => state.products);
+  const { items: products, loading: productsLoading } = useSelector((state) => state.products);
   const { language } = useLanguage();
   const t = translations[language];
   
+  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'orders'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [uploading, setUploading] = useState(false);
   
+  // Orders State
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -110,11 +141,36 @@ export default function AdminDashboard() {
       return;
     }
     
-    dispatch(fetchProductsRequest());
-  }, [dispatch, router]);
+    // Initial fetch based on tab
+    if (activeTab === 'products') {
+        dispatch(fetchProductsRequest());
+    } else {
+        fetchOrders();
+    }
+  }, [dispatch, router, activeTab]);
 
-  // Image upload remains local for simplicity, or can be moved to saga if strict adherence required.
-  // For now, keeping it here as it returns a value needed for the form immediately.
+  const fetchOrders = async () => {
+      setOrdersLoading(true);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+      try {
+          const token = localStorage.getItem('access_token');
+          const res = await fetch(`${API_URL}/orders`, {
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setOrders(data);
+          }
+      } catch (error) {
+          console.error("Failed to fetch orders", error);
+      } finally {
+          setOrdersLoading(false);
+      }
+  };
+
+  // Image upload remains local for simplicity
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -124,7 +180,7 @@ export default function AdminDashboard() {
     formData.append('file', file);
 
     const token = localStorage.getItem('access_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
 
     try {
       const res = await fetch(`${API_URL}/products/upload`, {
@@ -210,14 +266,17 @@ export default function AdminDashboard() {
   ];
 
   // Pagination Logic
+  const currentItems = activeTab === 'products' ? products : orders;
+  const loading = activeTab === 'products' ? productsLoading : ordersLoading;
+  
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const paginatedItems = currentItems.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(currentItems.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading && currentItems.length === 0) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-vintage-cream flex flex-col">
@@ -225,49 +284,129 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-serif font-bold text-vintage-dark">{t.title}</h1>
-          <Button onClick={openAddModal} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" /> {t.addProduct}
-          </Button>
+          {activeTab === 'products' && (
+            <Button onClick={openAddModal} className="flex items-center gap-2">
+                <Plus className="w-4 h-4" /> {t.addProduct}
+            </Button>
+          )}
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden border border-vintage-border">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.id}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.name}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.category}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.price}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.qty}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.actions}</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentProducts.map((product) => (
-                <tr key={product.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{product.name?.en || product.name}</div>
-                    <div className="text-xs text-gray-500">{product.name?.vi}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category?.en || product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.price}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                        onClick={() => openEditModal(product)}
-                        className="text-vintage-gold hover:text-vintage-gold-hover mr-4 transition-colors cursor-pointer"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-6 border-b border-gray-200">
+            <button
+                onClick={() => { setActiveTab('products'); setCurrentPage(1); }}
+                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
+                    activeTab === 'products' 
+                    ? 'border-b-2 border-vintage-gold text-vintage-gold' 
+                    : 'text-gray-500 hover:text-vintage-dark'
+                }`}
+            >
+                <Package className="w-5 h-5" />
+                {t.tabs.products}
+            </button>
+            <button
+                onClick={() => { setActiveTab('orders'); setCurrentPage(1); }}
+                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
+                    activeTab === 'orders' 
+                    ? 'border-b-2 border-vintage-gold text-vintage-gold' 
+                    : 'text-gray-500 hover:text-vintage-dark'
+                }`}
+            >
+                <ShoppingBag className="w-5 h-5" />
+                {t.tabs.orders}
+            </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow overflow-hidden border border-vintage-border overflow-x-auto">
+          {activeTab === 'products' ? (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.id}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.name}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.category}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.price}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.qty}</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.actions}</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedItems.map((product) => (
+                    <tr key={product.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{product.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{product.name?.en || product.name}</div>
+                        <div className="text-xs text-gray-500">{product.name?.vi}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category?.en || product.category}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.price}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button 
+                            onClick={() => openEditModal(product)}
+                            className="text-vintage-gold hover:text-vintage-gold-hover mr-4 transition-colors cursor-pointer"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900 transition-colors cursor-pointer">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+          ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.id}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.date}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.customer}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.items}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.total}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.payment}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.orderTable.status}</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedItems.map((order) => (
+                    <tr key={order._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title={order._id}>...{order._id.slice(-6)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{order.username || 'Guest'}</div>
+                        <div className="text-xs text-gray-500">{order.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.items.length} items
+                        <div className="text-xs text-gray-400 truncate max-w-[150px]">
+                            {order.items.map(i => i.name).join(', ')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${(order.totalAmount / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{order.paymentMethod === 'credit_card' ? 'Stripe' : order.paymentMethod}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            order.status === 'paid' || order.status === 'completed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {paginatedItems.length === 0 && (
+                      <tr>
+                          <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No orders found</td>
+                      </tr>
+                  )}
+                </tbody>
+              </table>
+          )}
         </div>
 
         {/* Pagination Controls */}
@@ -296,8 +435,8 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
+      {/* Add/Edit Modal (Only for Products) */}
+      {isModalOpen && activeTab === 'products' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">

@@ -10,13 +10,21 @@ export function CartProvider({ children }) {
   const [username, setUsername] = useState(null);
 
   // Helper to get the storage key based on current user
-  const getCartKey = (user) => `nail_cart_${user || 'guest'}`;
+  // Changed prefix to force clear old polluted cache
+  const getCartKey = (user) => `nail_shop_cart_v2_${user || 'guest'}`;
 
   // 1. Handle Auth Changes & Initial Load
   useEffect(() => {
     const updateAuth = () => {
         const user = localStorage.getItem('username');
-        setUsername(user);
+        const token = localStorage.getItem('access_token');
+        
+        // Strict check to match Navbar logic
+        if (token && user && user !== 'null' && user !== 'undefined') {
+            setUsername(user);
+        } else {
+            setUsername(null);
+        }
     };
     
     // Initial check
@@ -25,7 +33,13 @@ export function CartProvider({ children }) {
 
     // Listen for login/logout
     window.addEventListener('auth-change', updateAuth);
-    return () => window.removeEventListener('auth-change', updateAuth);
+    // Also listen for storage events (cross-tab sync)
+    window.addEventListener('storage', updateAuth);
+    
+    return () => {
+        window.removeEventListener('auth-change', updateAuth);
+        window.removeEventListener('storage', updateAuth);
+    };
   }, []);
 
   // 2. Load Cart when Username Changes (or on Mount)
@@ -53,7 +67,11 @@ export function CartProvider({ children }) {
     
     const key = getCartKey(username);
     localStorage.setItem(key, JSON.stringify(cart));
-  }, [cart, username, mounted]);
+    // Remove username from dependencies to prevent saving the *previous* user's cart 
+    // to the *new* user's storage key immediately upon login/logout switching.
+    // We only want to save when the cart content actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart]);
 
   const addToCart = (product) => {
     setCart((prev) => {

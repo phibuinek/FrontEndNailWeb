@@ -19,6 +19,7 @@ const translations = {
     sortNewest: "Newest",
     sortPriceLow: "Price: Low to High",
     sortPriceHigh: "Price: High to Low",
+    sortBestSellers: "Best Sellers",
     prev: "Previous",
     next: "Next",
     page: "Page",
@@ -32,6 +33,7 @@ const translations = {
     sortNewest: "Mới nhất",
     sortPriceLow: "Giá: Thấp đến Cao",
     sortPriceHigh: "Giá: Cao đến Thấp",
+    sortBestSellers: "Bán Chạy Nhất",
     prev: "Trước",
     next: "Sau",
     page: "Trang",
@@ -43,7 +45,10 @@ const ITEMS_PER_PAGE = 20;
 
 export default function ShopView() {
   const dispatch = useDispatch();
-  const { items: products, loading } = useSelector((state) => state.products);
+  const { items, loading } = useSelector((state) => state.products);
+  // Ensure products is always an array to prevent runtime errors
+  const products = Array.isArray(items) ? items : [];
+  
   const { language } = useLanguage();
   const langKey = language.toLowerCase();
   const t = translations[language];
@@ -51,7 +56,8 @@ export default function ShopView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
-
+  
+  // Initialize state from URL params or defaults
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
   const [mounted, setMounted] = useState(false);
@@ -60,6 +66,15 @@ export default function ShopView() {
     setMounted(true);
     dispatch(fetchProductsRequest());
   }, [dispatch]);
+
+  // Sync URL params to state on change (including initial load)
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    const sortParam = searchParams.get('sort');
+    
+    if (categoryParam) setSelectedCategory(categoryParam);
+    if (sortParam) setSortBy(sortParam);
+  }, [searchParams]);
 
   // Extract unique categories from products
   const categories = useMemo(() => {
@@ -87,7 +102,12 @@ export default function ShopView() {
     if (sortBy === 'priceAsc') {
       result.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'priceDesc') {
+      // Change from priceDesc to Best Sellers (sold count) if using best-sellers link
+      // But here we keep priceDesc as literal price high to low
       result.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'bestSellers') {
+      // New sort option for sold count
+      result.sort((a, b) => (b.sold || 0) - (a.sold || 0));
     } else {
       // Default 'newest'
       result.sort((a, b) => b.id - a.id);
@@ -96,14 +116,29 @@ export default function ShopView() {
     return result;
   }, [products, selectedCategory, sortBy, langKey]);
 
-  // Reset to page 1 when filters change logic removed in favor of explicit reset in handlers
-  // to avoid initial load reset issues when deep linking.
-
-
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const displayedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const updateUrl = (key, value) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(key, value);
+      params.set('page', '1'); // Reset to page 1 on filter/sort change
+      router.push(`/shop?${params.toString()}`);
+  };
+
+  const handleCategoryChange = (e) => {
+      const newCategory = e.target.value;
+      setSelectedCategory(newCategory);
+      updateUrl('category', newCategory);
+  };
+
+  const handleSortChange = (e) => {
+      const newSort = e.target.value;
+      setSortBy(newSort);
+      updateUrl('sort', newSort);
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -141,12 +176,7 @@ export default function ShopView() {
                 <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.filterTitle}:</span>
                 <select 
                     value={selectedCategory}
-                    onChange={(e) => {
-                        setSelectedCategory(e.target.value);
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('page', '1');
-                        router.push(`/shop?${params.toString()}`);
-                    }}
+                    onChange={handleCategoryChange}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="All" className="bg-white dark:bg-vintage-dark">{t.allCategories}</option>
@@ -162,15 +192,11 @@ export default function ShopView() {
                 <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.sortTitle}:</span>
                 <select 
                     value={sortBy}
-                    onChange={(e) => {
-                        setSortBy(e.target.value);
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('page', '1');
-                        router.push(`/shop?${params.toString()}`);
-                    }}
+                    onChange={handleSortChange}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="newest" className="bg-white dark:bg-vintage-dark">{t.sortNewest}</option>
+                    <option value="bestSellers" className="bg-white dark:bg-vintage-dark">{t.sortBestSellers}</option>
                     <option value="priceAsc" className="bg-white dark:bg-vintage-dark">{t.sortPriceLow}</option>
                     <option value="priceDesc" className="bg-white dark:bg-vintage-dark">{t.sortPriceHigh}</option>
                 </select>
@@ -186,7 +212,11 @@ export default function ShopView() {
             ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-vintage-dark dark:text-vintage-cream opacity-70">
                     <p className="text-lg font-serif">No products found.</p>
-                    <button onClick={() => {setSelectedCategory('All'); setSortBy('newest');}} className="mt-2 text-sm text-vintage-gold hover:underline">Clear Filters</button>
+                    <button onClick={() => {
+                        setSelectedCategory('All'); 
+                        setSortBy('newest');
+                        router.push('/shop');
+                    }} className="mt-2 text-sm text-vintage-gold hover:underline">Clear Filters</button>
                 </div>
             )}
         </div>

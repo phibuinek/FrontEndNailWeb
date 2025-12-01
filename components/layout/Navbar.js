@@ -7,6 +7,8 @@ import { useTheme } from 'next-themes';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/store/slices/authSlice';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,38 +23,46 @@ export default function Navbar() {
   const [username, setUsername] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
   const userMenuRef = useRef(null);
 
-  // Prevent hydration mismatch and check auth
-  useEffect(() => {
-    setMounted(true);
-    const user = localStorage.getItem('username');
-    const admin = localStorage.getItem('isAdmin');
-    if (user && user !== 'undefined' && user !== 'null') setUsername(user);
-    if (admin) setIsAdmin(true);
+    // Prevent hydration mismatch and check auth
+    useEffect(() => {
+        setMounted(true);
+        
+        const updateAuthState = () => {
+            const user = localStorage.getItem('username');
+            const admin = localStorage.getItem('isAdmin');
+            
+            // Only set username if it's valid string and not 'null'/'undefined'
+            // Also check if access_token exists, otherwise logout/clear state
+            const token = localStorage.getItem('access_token');
+            
+            if (token && user && user !== 'null' && user !== 'undefined') {
+                setUsername(user);
+            } else {
+                setUsername(null);
+            }
+            
+            setIsAdmin(!!admin);
+        };
 
-    // Add event listener for storage changes (e.g. login/logout in other tabs)
-    const handleStorageChange = () => {
-        const user = localStorage.getItem('username');
-        const admin = localStorage.getItem('isAdmin');
-        if (user && user !== 'undefined' && user !== 'null') {
-            setUsername(user);
-        } else {
-            setUsername(null);
-        }
-        setIsAdmin(!!admin);
-    };
+        // Initial check
+        updateAuthState();
 
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Custom event for immediate UI update after login/logout within the same tab
-    window.addEventListener('auth-change', handleStorageChange);
+        // Add event listener for storage changes (e.g. login/logout in other tabs)
+        const handleStorageChange = () => updateAuthState();
 
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('auth-change', handleStorageChange);
-    };
-  }, []);
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Custom event for immediate UI update after login/logout within the same tab
+        window.addEventListener('auth-change', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('auth-change', handleStorageChange);
+        };
+    }, []);
 
   // Handle language transition
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function Navbar() {
       const timer = setTimeout(() => {
         setLangState(language);
         setIsFadingLang(false);
-      }, 300); // Increased delay for smoother transition
+      }, 100); // Decreased delay for snappier transition
       return () => clearTimeout(timer);
     }
   }, [language, langState]);
@@ -73,10 +83,15 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
+    // Dispatch Redux logout action (which also clears localStorage)
+    dispatch(logout());
+    
+    // Redundant clear for safety and immediate local state update
     localStorage.removeItem('access_token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('username');
+    
     setUsername(null);
     setIsAdmin(false);
     setIsUserMenuOpen(false);
@@ -85,8 +100,8 @@ export default function Navbar() {
   };
 
   const navText = {
-    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi," },
-    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào," }
+    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi,", login: "Login" },
+    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào,", login: "Đăng Nhập" }
   };
 
   const t = navText[langState];
@@ -174,18 +189,23 @@ export default function Navbar() {
                 ref={userMenuRef}
             >
               {username ? (
-                 <div className="flex items-center cursor-pointer text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300">
+                 <div className="flex items-center cursor-pointer text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 py-2 px-2">
                    <User className="w-5 h-5" />
                  </div>
               ) : (
-                <Link href="/login" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300">
+                <Link href="/login" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 py-2 px-2 flex items-center gap-2">
                    <User className="w-5 h-5" />
+                   <span className="text-sm font-medium">{t.login}</span>
                 </Link>
               )}
 
               {/* Dropdown Menu */}
               {username && isUserMenuOpen && (
-                  <div className="absolute right-0 mt-0 w-48 bg-white dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md overflow-hidden py-1 z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+                  <div 
+                    className="absolute right-0 top-full mt-0 w-48 bg-white dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md overflow-hidden py-1 z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2"
+                    onMouseEnter={() => setIsUserMenuOpen(true)}
+                    onMouseLeave={() => setIsUserMenuOpen(false)}
+                  >
                       <div className="px-4 py-3 border-b border-vintage-border dark:border-vintage-border/20 bg-vintage-paper/30 dark:bg-vintage-dark/30">
                           <p className="text-xs text-gray-500 dark:text-gray-400">{t.welcome}</p>
                           <p className="text-sm font-medium text-vintage-dark dark:text-vintage-cream truncate">{username}</p>

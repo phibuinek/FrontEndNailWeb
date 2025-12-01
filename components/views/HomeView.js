@@ -44,7 +44,10 @@ const translations = {
 
 export default function HomeView() {
   const dispatch = useDispatch();
-  const { items: products } = useSelector((state) => state.products);
+  const { items } = useSelector((state) => state.products);
+  // Ensure products is always an array to prevent runtime errors
+  const products = Array.isArray(items) ? items : [];
+
   const { language } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState(language);
   const [isFading, setIsFading] = useState(false);
@@ -63,7 +66,7 @@ export default function HomeView() {
       const timer = setTimeout(() => {
         setCurrentLanguage(language);
         setIsFading(false);
-      }, 300); // Wait for fade out before changing text
+      }, 100); // Decreased delay for snappier transition
       return () => clearTimeout(timer);
     }
   }, [language, currentLanguage]);

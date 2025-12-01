@@ -1,7 +1,7 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import { loginSuccess, loginFailure, registerSuccess, registerFailure, setAuth } from '../slices/authSlice';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
 
 function* handleLogin(action) {
   try {
@@ -24,6 +24,9 @@ function* handleLogin(action) {
 
       if (data.role === 'admin') {
          localStorage.setItem('isAdmin', 'true');
+      } else {
+         // Ensure isAdmin is cleared if not admin, to prevent leftover state from previous user
+         localStorage.removeItem('isAdmin');
       }
       
       // Dispatch custom event for non-React components if needed (like Navbar used to)

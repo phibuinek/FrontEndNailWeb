@@ -43,7 +43,16 @@ const translations = {
     processing: "Processing...",
     orderPlaced: "Order placed! Please pay at store.",
     paymentSuccess: "Payment Successful!",
-    paymentFailed: "Failed to initialize payment"
+    paymentFailed: "Failed to initialize payment",
+    errors: {
+        emailRequired: "Email is required",
+        emailInvalid: "Email is invalid",
+        firstName: "First name is required",
+        lastName: "Last name is required",
+        address: "Address is required",
+        city: "City is required",
+        zip: "ZIP code is required"
+    }
   },
   VI: {
     delivery: "Phương Thức Giao Hàng",
@@ -71,7 +80,16 @@ const translations = {
     processing: "Đang xử lý...",
     orderPlaced: "Đã đặt hàng! Vui lòng thanh toán tại cửa hàng.",
     paymentSuccess: "Thanh toán thành công!",
-    paymentFailed: "Khởi tạo thanh toán thất bại"
+    paymentFailed: "Khởi tạo thanh toán thất bại",
+    errors: {
+        emailRequired: "Vui lòng nhập Email",
+        emailInvalid: "Email không hợp lệ",
+        firstName: "Vui lòng nhập Họ",
+        lastName: "Vui lòng nhập Tên",
+        address: "Vui lòng nhập Địa chỉ",
+        city: "Vui lòng nhập Thành phố",
+        zip: "Vui lòng nhập Mã bưu điện"
+    }
   }
 };
 
@@ -121,8 +139,11 @@ export default function CheckoutForm() {
 
   useEffect(() => {
     setMounted(true);
-    const userEmail = localStorage.getItem('username') || ''; // simplistic, usually username isn't email
-    setFormData(prev => ({ ...prev, email: userEmail }));
+    const userEmail = localStorage.getItem('username') || ''; 
+    // Simple check if username looks like an email
+    if (userEmail && /\S+@\S+\.\S+/.test(userEmail)) {
+        setFormData(prev => ({ ...prev, email: userEmail }));
+    }
   }, []);
 
   // Automatically switch to credit_card if delivery method is ship and payment method is store
@@ -143,20 +164,56 @@ export default function CheckoutForm() {
       }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let errorMsg = null;
+
+    if (deliveryMethod === 'ship') {
+        if (name === 'email') {
+             if (!value.trim()) errorMsg = t.errors.emailRequired;
+             else if (!/\S+@\S+\.\S+/.test(value)) errorMsg = t.errors.emailInvalid;
+        }
+        if (name === 'firstName' && !value.trim()) errorMsg = t.errors.firstName;
+        if (name === 'lastName' && !value.trim()) errorMsg = t.errors.lastName;
+        if (name === 'address' && !value.trim()) errorMsg = t.errors.address;
+        if (name === 'city' && !value.trim()) errorMsg = t.errors.city;
+        if (name === 'zip' && !value.trim()) errorMsg = t.errors.zip;
+    } else {
+         if (name === 'email') {
+             if (!value.trim()) errorMsg = t.errors.emailRequired;
+             else if (!/\S+@\S+\.\S+/.test(value)) errorMsg = t.errors.emailInvalid;
+        }
+    }
+    
+    if (errorMsg) {
+        setFieldErrors(prev => ({ ...prev, [name]: errorMsg }));
+    }
+  };
+
   const validateForm = () => {
       const errors = {};
-      if (!formData.email.trim()) {
-          errors.email = "Email is required";
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-          errors.email = "Email is invalid";
+      
+      // Only validate shipping/contact info if delivery method is 'ship'
+      if (deliveryMethod === 'ship') {
+        if (!formData.email.trim()) {
+            errors.email = t.errors.emailRequired;
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = t.errors.emailInvalid;
+        }
+        if (!formData.firstName.trim()) errors.firstName = t.errors.firstName;
+        if (!formData.lastName.trim()) errors.lastName = t.errors.lastName;
+        if (!formData.address.trim()) errors.address = t.errors.address;
+        if (!formData.city.trim()) errors.city = t.errors.city;
+        if (!formData.zip.trim()) errors.zip = t.errors.zip;
+      } else {
+        // If Pickup, maybe just require basic info if needed, or nothing?
+        // For now let's at least require email for order confirmation
+        if (!formData.email.trim()) {
+             errors.email = t.errors.emailRequired;
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+             errors.email = t.errors.emailInvalid;
+        }
       }
-      if (!formData.firstName.trim()) errors.firstName = "First name is required";
-      if (!formData.lastName.trim()) errors.lastName = "Last name is required";
-      if (!formData.address.trim()) errors.address = "Address is required";
-      if (!formData.city.trim()) errors.city = "City is required";
-      if (!formData.zip.trim()) errors.zip = "ZIP code is required";
-      // Basic phone validation (optional)
-      // if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/\D/g,''))) errors.phone = "Invalid phone number";
       
       setFieldErrors(errors);
       return Object.keys(errors).length === 0;
@@ -165,14 +222,72 @@ export default function CheckoutForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    if (deliveryMethod === 'ship' && !validateForm()) {
+    // Always validate now, but logic inside validateForm handles the method check
+    if (!validateForm()) {
         return;
     }
-
+    
     setProcessing(true);
+    
+    // Helper to create order
+    const createOrder = async (paymentStatus) => {
+        try {
+            const user = localStorage.getItem('username');
+            const orderData = {
+                username: user || 'Guest',
+                email: formData.email,
+                items: cart.map(item => ({
+                    productId: item.id,
+                    name: typeof item.name === 'object' ? item.name.en : item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                totalAmount: amount,
+                paymentMethod: paymentMethod,
+                shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`,
+                status: paymentStatus // 'pending' or 'paid'
+            };
+
+            const token = localStorage.getItem('access_token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(`${API_URL}/orders`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(orderData)
+            });
+
+            if (!res.ok) {
+                console.error("Failed to create order", await res.text());
+            }
+        } catch (err) {
+            console.error("Error creating order:", err);
+        }
+    };
 
     if (paymentMethod === 'store') {
         // Handle Pay at Store logic (Simulated)
+        
+        // 1. Create Order Record
+        await createOrder('pending');
+        
+        // 2. Update sold count for store payment as well
+        try {
+            await fetch(`${API_URL}/products/update-sold`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    items: cart.map(item => ({ id: item.id, quantity: item.quantity }))
+                })
+            });
+        } catch (updateError) {
+            console.error("Failed to update sold count:", updateError);
+        }
+
         setTimeout(() => {
             clearCart();
             alert(t.orderPlaced);
@@ -186,7 +301,7 @@ export default function CheckoutForm() {
     }
 
     const token = localStorage.getItem('access_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
 
     try {
         // 1. Create PaymentIntent
@@ -238,6 +353,26 @@ export default function CheckoutForm() {
             setProcessing(false);
         } else {
             if (result.paymentIntent.status === 'succeeded') {
+                // 1. Create Order Record
+                await createOrder('paid');
+
+                // Update sold count
+                try {
+                    await fetch(`${API_URL}/products/update-sold`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 'Authorization': `Bearer ${token}` // If you protect this route
+                        },
+                        body: JSON.stringify({
+                            items: cart.map(item => ({ id: item.id, quantity: item.quantity }))
+                        })
+                    });
+                } catch (updateError) {
+                    console.error("Failed to update sold count:", updateError);
+                    // We don't block success if this fails, just log it
+                }
+
                 clearCart();
                 alert(t.paymentSuccess);
                 router.push('/');
@@ -249,7 +384,8 @@ export default function CheckoutForm() {
         if (err.message && (err.message.includes("client_secret") || err.message.includes("intent secret"))) {
              setError(t.paymentFailed);
         } else {
-             setError(err.message);
+             // Display the actual error message for debugging if possible, or fallback
+             setError(err.message || t.paymentFailed);
         }
         setProcessing(false);
     }
@@ -334,6 +470,7 @@ export default function CheckoutForm() {
                     name="email" 
                     value={formData.email} 
                     onChange={handleInputChange} 
+                    onBlur={handleBlur}
                     className={`${inputStyle} ${fieldErrors.email ? errorInputStyle : 'border-gray-300'}`} 
                     placeholder="email@example.com"
                 />
@@ -364,6 +501,7 @@ export default function CheckoutForm() {
                             name="firstName" 
                             value={formData.firstName} 
                             onChange={handleInputChange} 
+                            onBlur={handleBlur}
                             className={`${inputStyle} ${fieldErrors.firstName ? errorInputStyle : 'border-gray-300'}`} 
                         />
                         {fieldErrors.firstName && <p className={errorTextStyle}>{fieldErrors.firstName}</p>}
@@ -375,6 +513,7 @@ export default function CheckoutForm() {
                             name="lastName" 
                             value={formData.lastName} 
                             onChange={handleInputChange} 
+                            onBlur={handleBlur}
                             className={`${inputStyle} ${fieldErrors.lastName ? errorInputStyle : 'border-gray-300'}`} 
                         />
                         {fieldErrors.lastName && <p className={errorTextStyle}>{fieldErrors.lastName}</p>}
@@ -387,6 +526,7 @@ export default function CheckoutForm() {
                         name="address" 
                         value={formData.address} 
                         onChange={handleInputChange} 
+                        onBlur={handleBlur}
                         className={`${inputStyle} ${fieldErrors.address ? errorInputStyle : 'border-gray-300'}`} 
                         placeholder={t.address} 
                     />
@@ -404,6 +544,7 @@ export default function CheckoutForm() {
                             name="city" 
                             value={formData.city} 
                             onChange={handleInputChange} 
+                            onBlur={handleBlur}
                             className={`${inputStyle} ${fieldErrors.city ? errorInputStyle : 'border-gray-300'}`} 
                         />
                         {fieldErrors.city && <p className={errorTextStyle}>{fieldErrors.city}</p>}
@@ -440,6 +581,7 @@ export default function CheckoutForm() {
                             name="zip" 
                             value={formData.zip} 
                             onChange={handleInputChange} 
+                            onBlur={handleBlur}
                             className={`${inputStyle} ${fieldErrors.zip ? errorInputStyle : 'border-gray-300'}`} 
                         />
                         {fieldErrors.zip && <p className={errorTextStyle}>{fieldErrors.zip}</p>}

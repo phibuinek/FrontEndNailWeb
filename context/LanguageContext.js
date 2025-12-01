@@ -5,7 +5,7 @@ import { createContext, useContext, useState } from 'react';
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguage] = useState('EN');
+  const [language, setLanguage] = useState('VI'); // Set default to Vietnamese
 
   const toggleLanguage = () => {
     setLanguage((prev) => (prev === 'EN' ? 'VI' : 'EN'));
