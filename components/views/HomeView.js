@@ -6,6 +6,9 @@ import { fetchProductsRequest } from '@/store/slices/productsSlice';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
+import FeaturedCategories from '@/components/home/FeaturedCategories';
+import Features from '@/components/home/Features';
+import Newsletter from '@/components/home/Newsletter';
 import ProductGrid from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/context/LanguageContext';
@@ -93,14 +96,21 @@ export default function HomeView() {
           button1: t.shopCollection
         }} />
         
-        <section className="py-12 bg-vintage-paper/50 dark:bg-vintage-dark/50 transition-colors duration-500">
+        {/* Features Section (Why Choose Us) */}
+        <Features language={currentLanguage} />
+
+        <section className="py-16 bg-vintage-paper/30 dark:bg-vintage-dark/30 transition-colors duration-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-serif font-bold text-vintage-dark dark:text-vintage-gold transition-colors duration-500">{t.philosophyTitle}</h2>
-            <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto transition-colors duration-500">
+            <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed transition-colors duration-500">
               {t.philosophyText}
             </p>
+            <div className="mt-8 text-vintage-gold text-2xl font-serif italic">Est. 2024</div>
           </div>
         </section>
+
+        {/* Featured Categories */}
+        <FeaturedCategories language={currentLanguage} />
 
         {/* New Arrivals Section */}
         {newArrivals.length > 0 && (
@@ -113,15 +123,18 @@ export default function HomeView() {
             <ProductGrid products={featuredProducts} title={t.featuredCollections} />
         </div>
         
-        <div className="flex justify-center pb-12 bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
+        <div className="flex justify-center pb-16 bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
             <Button 
                 onClick={() => router.push('/shop')} 
                 variant="outline" 
-                className="border-vintage-gold text-vintage-gold hover:bg-vintage-gold hover:text-white transition-all duration-300"
+                className="border-vintage-gold text-vintage-gold hover:bg-vintage-gold hover:text-white px-8 py-3 uppercase tracking-widest transition-all duration-300"
             >
                 {t.seeAll}
             </Button>
         </div>
+
+        {/* Newsletter Section */}
+        <Newsletter language={currentLanguage} />
 
         {!isLoggedIn && (
             <section className="bg-vintage-rose/10 dark:bg-vintage-rose/5 py-16 transition-colors duration-500">

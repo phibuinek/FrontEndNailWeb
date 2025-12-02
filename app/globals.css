@@ -73,7 +73,7 @@ html.lenis, html.lenis body {
 ::-webkit-scrollbar-thumb {
   background: var(--color-vintage-gold);
   border-radius: 4px;
-}
+  }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-vintage-gold-hover);
