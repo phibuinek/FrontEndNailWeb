@@ -60,6 +60,7 @@ export default function ShopView() {
   // Initialize state from URL params or defaults
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
+  const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -71,9 +72,12 @@ export default function ShopView() {
   useEffect(() => {
     const categoryParam = searchParams.get('category');
     const sortParam = searchParams.get('sort');
+    const searchParam = searchParams.get('search');
     
     if (categoryParam) setSelectedCategory(categoryParam);
     if (sortParam) setSortBy(sortParam);
+    if (searchParam) setSearchQuery(searchParam);
+    else setSearchQuery(''); // Reset search if param removed
   }, [searchParams]);
 
   // Extract unique categories from products
@@ -89,6 +93,16 @@ export default function ShopView() {
   // Filter and Sort Logic
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    // 0. Filter by Search Query
+    if (searchQuery) {
+        const term = searchQuery.toLowerCase();
+        result = result.filter(p => {
+            const nameEn = p.name?.en?.toLowerCase() || (typeof p.name === 'string' ? p.name.toLowerCase() : '');
+            const nameVi = p.name?.vi?.toLowerCase() || '';
+            return nameEn.includes(term) || nameVi.includes(term);
+        });
+    }
 
     // 1. Filter by Category
     if (selectedCategory !== 'All') {
@@ -114,7 +128,7 @@ export default function ShopView() {
     }
 
     return result;
-  }, [products, selectedCategory, sortBy, langKey]);
+  }, [products, selectedCategory, sortBy, searchQuery, langKey]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -159,7 +173,9 @@ export default function ShopView() {
       
       <div className="py-12 bg-vintage-paper dark:bg-vintage-dark/50 border-b border-vintage-border dark:border-vintage-border/10 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-serif font-bold text-vintage-dark dark:text-vintage-gold transition-colors duration-500">{t.title}</h1>
+          <h1 className="text-4xl font-serif font-bold text-vintage-dark dark:text-vintage-gold transition-colors duration-500">
+              {searchQuery ? `Search Results for "${searchQuery}"` : t.title}
+          </h1>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto transition-colors duration-500">
             {t.description}
           </p>
@@ -170,6 +186,31 @@ export default function ShopView() {
         {/* Filters and Sort Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white dark:bg-vintage-dark/40 p-4 rounded-lg border border-vintage-border dark:border-vintage-border/20 shadow-sm">
             
+            {/* Search Filter */}
+            <div className="flex items-center gap-2 w-full md:w-auto flex-grow md:mr-4">
+                <div className="relative w-full">
+                    <input 
+                        type="text" 
+                        placeholder="Search products..." 
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            // Optional: Debounce URL update or update on enter
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                updateUrl('search', searchQuery);
+                            }
+                        }}
+                        onBlur={() => updateUrl('search', searchQuery)} // Update URL on blur to sync
+                        className="w-full pl-10 pr-4 py-1.5 text-sm bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream transition-colors"
+                    />
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 text-vintage-gold">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                </div>
+            </div>
+
             {/* Category Filter */}
             <div className="flex items-center gap-2 w-full md:w-auto">
                 <Filter className="w-5 h-5 text-vintage-gold" />
@@ -215,8 +256,9 @@ export default function ShopView() {
                     <button onClick={() => {
                         setSelectedCategory('All'); 
                         setSortBy('newest');
+                        setSearchQuery('');
                         router.push('/shop');
-                    }} className="mt-2 text-sm text-vintage-gold hover:underline">Clear Filters</button>
+                    }} className="mt-2 text-sm text-vintage-gold hover:underline">Clear Filters & Search</button>
                 </div>
             )}
         </div>

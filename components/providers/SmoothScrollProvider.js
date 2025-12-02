@@ -23,8 +23,12 @@ export default function SmoothScrollProvider({ children }) {
 
     requestAnimationFrame(raf);
 
+    // Expose lenis instance for manual control
+    window.lenis = lenis;
+
     return () => {
       lenis.destroy();
+      window.lenis = null;
     };
   }, []);
 

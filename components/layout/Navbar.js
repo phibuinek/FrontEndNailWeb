@@ -22,9 +22,28 @@ export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user dropdown
   const [username, setUsername] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [navSearchTerm, setNavSearchTerm] = useState('');
   const router = useRouter();
   const dispatch = useDispatch();
   const userMenuRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const handleSearchSubmit = (e) => {
+      e.preventDefault();
+      if (navSearchTerm.trim()) {
+          router.push(`/shop?search=${encodeURIComponent(navSearchTerm.trim())}`);
+          setIsSearchOpen(false);
+          setNavSearchTerm('');
+      }
+  };
+  
+  // Focus input when open
+  useEffect(() => {
+      if (isSearchOpen && searchInputRef.current) {
+          searchInputRef.current.focus();
+      }
+  }, [isSearchOpen]);
 
     // Prevent hydration mismatch and check auth
     useEffect(() => {
@@ -134,13 +153,13 @@ export default function Navbar() {
           </div>
 
           {/* Icons & Toggles */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-4">
             {/* Language Toggle */}
             <button 
               onClick={handleLanguageToggle}
-              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 flex items-center gap-1 text-sm font-medium px-3 py-1 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
+              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 flex items-center justify-center gap-1 text-sm font-medium h-10 px-3 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
             >
-              <Globe className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSwitching ? 'rotate-180' : ''}`} />
+              <Globe className={`w-5 h-5 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSwitching ? 'rotate-180' : ''}`} />
               
               {/* Sliding Text Container */}
               <div className="relative h-5 w-5 overflow-hidden">
@@ -149,8 +168,8 @@ export default function Navbar() {
                     language === 'VI' ? '-translate-y-5' : 'translate-y-0'
                   }`}
                 >
-                  <span className="flex h-5 w-5 items-center justify-center">EN</span>
-                  <span className="flex h-5 w-5 items-center justify-center">VI</span>
+                  <span className="flex h-5 w-5 items-center justify-center pt-0.5">EN</span>
+                  <span className="flex h-5 w-5 items-center justify-center pt-0.5">VI</span>
                 </div>
               </div>
             </button>
@@ -158,7 +177,7 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 transform active:rotate-90"
+              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 transform active:rotate-90 flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
               aria-label="Toggle Dark Mode"
             >
               {mounted && theme === 'dark' ? (
@@ -168,14 +187,42 @@ export default function Navbar() {
               )}
             </button>
 
-            <button className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300">
-              <Search className="w-5 h-5" />
-            </button>
+            {/* Search Toggle */}
+            <div className="relative flex items-center">
+                <button 
+                    onClick={() => setIsSearchOpen(!isSearchOpen)}
+                    className={`text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10 ${isSearchOpen ? 'text-vintage-gold' : ''}`}
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+                
+                {/* Search Dropdown Input */}
+                {isSearchOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md p-2 z-50 animate-in fade-in slide-in-from-top-2">
+                        <form onSubmit={handleSearchSubmit} className="flex items-center">
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search..."
+                                value={navSearchTerm}
+                                onChange={(e) => setNavSearchTerm(e.target.value)}
+                                className="w-full px-3 py-1.5 text-sm bg-transparent border-b border-vintage-gold focus:outline-none text-vintage-dark dark:text-vintage-cream placeholder-gray-400"
+                            />
+                            <button type="submit" className="ml-2 text-vintage-gold hover:text-vintage-gold-hover">
+                                <Search className="w-4 h-4" />
+                            </button>
+                        </form>
+                    </div>
+                )}
+            </div>
             
-            <Link href="/cart" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 relative">
+            <Link 
+                href="/cart" 
+                className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
+            >
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-vintage-rose text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute top-0 right-0 bg-vintage-rose text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-vintage-dark">
                   {cartCount}
                 </span>
               )}
@@ -183,19 +230,19 @@ export default function Navbar() {
             
             {/* User Icon / Dropdown */}
             <div 
-                className="relative" 
+                className="relative flex items-center" 
                 onMouseEnter={() => setIsUserMenuOpen(true)}
                 onMouseLeave={() => setIsUserMenuOpen(false)}
                 ref={userMenuRef}
             >
               {username ? (
-                 <div className="flex items-center cursor-pointer text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 py-2 px-2">
+                 <div className="flex items-center justify-center cursor-pointer text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10">
                    <User className="w-5 h-5" />
                  </div>
               ) : (
-                <Link href="/login" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 py-2 px-2 flex items-center gap-2">
+                <Link href="/login" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 flex items-center gap-2 px-3 h-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10">
                    <User className="w-5 h-5" />
-                   <span className="text-sm font-medium">{t.login}</span>
+                   <span className="text-sm font-medium hidden lg:inline">{t.login}</span>
                 </Link>
               )}
 

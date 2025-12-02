@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight, Package, ShoppingBag } from 'lucide-react';
+import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight, Package, ShoppingBag, Search } from 'lucide-react';
 import { 
     fetchProductsRequest, addProductRequest, updateProductRequest, deleteProductRequest 
 } from '@/store/slices/productsSlice';
@@ -119,6 +119,9 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
+  // Search State
+  const [searchTerm, setSearchTerm] = useState('');
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -149,6 +152,21 @@ export default function AdminDashboard() {
     }
   }, [dispatch, router, activeTab]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [isModalOpen]);
+
   const fetchOrders = async () => {
       setOrdersLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
@@ -172,12 +190,15 @@ export default function AdminDashboard() {
 
   // Image upload remains local for simplicity
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('file', file);
+    // API expects 'files' field for multiple upload
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
 
     const token = localStorage.getItem('access_token');
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
@@ -200,13 +221,38 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error('Upload failed');
       
       const data = await res.json();
-      setCurrentProduct(prev => ({ ...prev, image: data.url }));
+      // data.urls is array of strings
+      
+      setCurrentProduct(prev => {
+          const newImages = [...(prev.images || []), ...data.urls];
+          // Default main image to first one if not set
+          const mainImage = prev.image || newImages[0] || '';
+          return { ...prev, images: newImages, image: mainImage };
+      });
     } catch (err) {
       alert('Failed to upload image');
       console.error(err);
     } finally {
       setUploading(false);
+      // Reset input value to allow re-uploading same file
+      e.target.value = null;
     }
+  };
+
+  const removeImage = (indexToRemove) => {
+      setCurrentProduct(prev => {
+          const newImages = prev.images.filter((_, index) => index !== indexToRemove);
+          // If we removed the main image, set new main image
+          let newMainImage = prev.image;
+          if (prev.images[indexToRemove] === prev.image) {
+              newMainImage = newImages.length > 0 ? newImages[0] : '';
+          }
+          return { ...prev, images: newImages, image: newMainImage };
+      });
+  };
+
+  const setMainImage = (imgUrl) => {
+      setCurrentProduct(prev => ({ ...prev, image: imgUrl }));
   };
 
   const handleDelete = (id) => {
@@ -239,14 +285,18 @@ export default function AdminDashboard() {
       category: { en: 'Acrylic', vi: 'Acrylic' },
       price: 0,
       quantity: 0,
-      image: '/placeholder.jpg',
+      image: '',
+      images: [],
       rating: 5
     });
     setIsModalOpen(true);
   };
 
   const openEditModal = (product) => {
-    setCurrentProduct(JSON.parse(JSON.stringify(product)));
+    const p = JSON.parse(JSON.stringify(product));
+    // Ensure images array exists
+    if (!p.images) p.images = p.image ? [p.image] : [];
+    setCurrentProduct(p);
     setIsModalOpen(true);
   };
 
@@ -265,8 +315,27 @@ export default function AdminDashboard() {
     { en: 'Gloves', vi: 'Găng Tay' }
   ];
 
+  // Filter items based on search term
+  const filteredItems = (activeTab === 'products' ? products : orders).filter(item => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      if (activeTab === 'products') {
+          // Filter products by name (en/vi) or category
+          const nameEn = item.name?.en?.toLowerCase() || item.name?.toLowerCase() || '';
+          const nameVi = item.name?.vi?.toLowerCase() || '';
+          const catEn = item.category?.en?.toLowerCase() || item.category?.toLowerCase() || '';
+          return nameEn.includes(term) || nameVi.includes(term) || catEn.includes(term);
+      } else {
+          // Filter orders by ID, customer name, or email
+          const id = item._id.toLowerCase();
+          const user = item.username?.toLowerCase() || '';
+          const email = item.email?.toLowerCase() || '';
+          return id.includes(term) || user.includes(term) || email.includes(term);
+      }
+  });
+
   // Pagination Logic
-  const currentItems = activeTab === 'products' ? products : orders;
+  const currentItems = filteredItems;
   const loading = activeTab === 'products' ? productsLoading : ordersLoading;
   
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -282,13 +351,28 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-vintage-cream flex flex-col">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
           <h1 className="text-3xl font-serif font-bold text-vintage-dark">{t.title}</h1>
-          {activeTab === 'products' && (
-            <Button onClick={openAddModal} className="flex items-center gap-2">
-                <Plus className="w-4 h-4" /> {t.addProduct}
-            </Button>
-          )}
+          
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-grow sm:flex-grow-0">
+                  <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                      className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white"
+                  />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+
+              {activeTab === 'products' && (
+                <Button onClick={openAddModal} className="flex items-center gap-2 whitespace-nowrap">
+                    <Plus className="w-4 h-4" /> {t.addProduct}
+                </Button>
+              )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -323,6 +407,7 @@ export default function AdminDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.id}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.form.image}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.name}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.category}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.price}</th>
@@ -335,8 +420,17 @@ export default function AdminDashboard() {
                     <tr key={product.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{product.id}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{product.name?.en || product.name}</div>
-                        <div className="text-xs text-gray-500">{product.name?.vi}</div>
+                          <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                              {product.image ? (
+                                  <img src={product.image} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                              )}
+                          </div>
+                      </td>
+                      <td className="px-6 py-4 max-w-xs">
+                        <div className="text-sm font-medium text-gray-900 break-words">{product.name?.en || product.name}</div>
+                        <div className="text-xs text-gray-500 break-words">{product.name?.vi}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category?.en || product.category}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.price}</td>
@@ -438,7 +532,10 @@ export default function AdminDashboard() {
       {/* Add/Edit Modal (Only for Products) */}
       {isModalOpen && activeTab === 'products' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div 
+            className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain"
+            data-lenis-prevent
+          >
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-serif font-bold text-vintage-dark">
                 {currentProduct.id ? t.editProduct : t.addNewProduct}
@@ -458,7 +555,7 @@ export default function AdminDashboard() {
                     required
                     value={currentProduct.name?.en || ''}
                     onChange={(e) => setCurrentProduct({...currentProduct, name: {...currentProduct.name, en: e.target.value}})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
                 <div>
@@ -468,7 +565,7 @@ export default function AdminDashboard() {
                     required
                     value={currentProduct.name?.vi || ''}
                     onChange={(e) => setCurrentProduct({...currentProduct, name: {...currentProduct.name, vi: e.target.value}})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
               </div>
@@ -485,7 +582,7 @@ export default function AdminDashboard() {
                         category: { en: selectedCat.en, vi: selectedCat.vi }
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold cursor-pointer"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold cursor-pointer text-gray-900 bg-white"
                 >
                   {categories.map(cat => (
                     <option key={cat.en} value={cat.en}>{cat.en} / {cat.vi}</option>
@@ -504,7 +601,7 @@ export default function AdminDashboard() {
                     required
                     value={currentProduct.price}
                     onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
                 <div>
@@ -515,7 +612,7 @@ export default function AdminDashboard() {
                     required
                     value={currentProduct.quantity}
                     onChange={(e) => setCurrentProduct({...currentProduct, quantity: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
               </div>
@@ -528,7 +625,7 @@ export default function AdminDashboard() {
                     rows="3"
                     value={currentProduct.description?.en || ''}
                     onChange={(e) => setCurrentProduct({...currentProduct, description: {...currentProduct.description, en: e.target.value}})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
                 <div>
@@ -537,45 +634,61 @@ export default function AdminDashboard() {
                     rows="3"
                     value={currentProduct.description?.vi || ''}
                     onChange={(e) => setCurrentProduct({...currentProduct, description: {...currentProduct.description, vi: e.target.value}})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>
               </div>
 
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.image}</label>
-                <div className="flex items-center gap-4">
-                    <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
-                        {currentProduct.image ? (
-                            <img src={currentProduct.image} alt="Preview" className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-xs text-gray-400">No Img</span>
-                        )}
-                    </div>
-                    <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                            <label className="cursor-pointer bg-white border border-vintage-border text-vintage-dark px-4 py-2 rounded-md shadow-sm text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2">
-                                <Upload className="w-4 h-4" />
-                                {uploading ? t.form.uploading : t.form.upload}
-                                <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={uploading}
-                                />
-                            </label>
-                            <span className="text-xs text-gray-500">{t.form.orUrl}</span>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.form.image}</label>
+                
+                {/* Image List */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mb-4">
+                    {currentProduct.images && currentProduct.images.map((img, idx) => (
+                        <div key={idx} className={`relative aspect-square rounded-md overflow-hidden border-2 group ${currentProduct.image === img ? 'border-vintage-gold' : 'border-gray-200'}`}>
+                            <img src={img} alt={`Product ${idx}`} className="w-full h-full object-cover" />
+                            
+                            {/* Actions Overlay */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setMainImage(img)}
+                                    className={`px-2 py-1 text-xs rounded bg-white hover:bg-gray-100 ${currentProduct.image === img ? 'text-vintage-gold font-bold' : 'text-gray-700'}`}
+                                >
+                                    {currentProduct.image === img ? 'Main' : 'Set Main'}
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => removeImage(idx)}
+                                    className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                            
+                            {currentProduct.image === img && (
+                                <div className="absolute top-1 right-1 w-3 h-3 bg-vintage-gold rounded-full border border-white"></div>
+                            )}
                         </div>
-                        <input
-                            type="text"
-                            value={currentProduct.image || ''}
-                            onChange={(e) => setCurrentProduct({...currentProduct, image: e.target.value})}
-                            className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-sm"
-                            placeholder="https://..."
+                    ))}
+                    
+                    {/* Upload Button Block */}
+                    <label className="relative aspect-square rounded-md border-2 border-dashed border-gray-300 hover:border-vintage-gold hover:bg-gray-50 transition-all cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:text-vintage-gold">
+                        <div className="flex flex-col items-center gap-1 p-2 text-center">
+                            <Upload className="w-6 h-6" />
+                            <span className="text-xs font-medium">{uploading ? t.form.uploading : t.form.upload}</span>
+                            <span className="text-[10px] text-gray-400">Multiple allowed</span>
+                        </div>
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageUpload}
+                            disabled={uploading}
                         />
-                    </div>
+                    </label>
                 </div>
               </div>
 

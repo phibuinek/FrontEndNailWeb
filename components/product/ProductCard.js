@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Star, Package } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { formatPrice } from '@/utils/formatPrice';
 
 export default function ProductCard({ product }) {
   const { language } = useLanguage();
@@ -88,9 +89,9 @@ export default function ProductCard({ product }) {
           </div>
           
           <div className="flex justify-between items-end">
-            <p className="text-lg font-medium text-vintage-dark dark:text-vintage-cream">${product.price}</p>
+            <p className="text-lg font-medium text-vintage-dark dark:text-vintage-cream">{formatPrice(product.price, language)}</p>
             <Button 
-              size="sm" 
+              size="sm"   
               variant="outline" 
               className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isOutOfStock}

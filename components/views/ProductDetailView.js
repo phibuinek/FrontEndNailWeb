@@ -12,6 +12,7 @@ import { Star, Truck, ShieldCheck, RotateCcw, ChevronDown, ChevronUp, Lock } fro
 import { Button } from '@/components/ui/Button';
 import { Country, State } from 'country-state-city';
 import Link from 'next/link';
+import { formatPrice } from '@/utils/formatPrice';
 
 const translations = {
   EN: {
@@ -91,6 +92,30 @@ export default function ProductDetailView({ id }) {
   const [shippingError, setShippingError] = useState(null);
   const [states, setStates] = useState([]);
   const countries = Country.getAllCountries();
+  
+  // Image Gallery State
+  const [activeImage, setActiveImage] = useState(null);
+  const [showZoom, setShowZoom] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+      if (!showZoom) return;
+      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+      
+      // Calculate mouse position relative to image container
+      const x = e.clientX - left;
+      const y = e.clientY - top;
+      
+      setMousePosition({ x, y });
+
+      // Calculate background position percentages
+      // We want the zoom to follow the cursor
+      let bgX = (x / width) * 100;
+      let bgY = (y / height) * 100;
+      
+      setZoomPosition({ x: bgX, y: bgY });
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -102,6 +127,12 @@ export default function ProductDetailView({ id }) {
       dispatch(fetchProductRequest(id));
     }
   }, [dispatch, id]);
+
+  useEffect(() => {
+      if (product) {
+          setActiveImage(product.image);
+      }
+  }, [product]);
 
   useEffect(() => {
       const countryStates = State.getStatesOfCountry(shippingCountry);
@@ -168,25 +199,88 @@ export default function ProductDetailView({ id }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
           
           {/* Image Section */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20">
-            {product.image ? (
-              <Image
-                src={product.image}
-                alt={name}
-                fill
-                className="object-cover object-center"
-                priority
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
-            )}
-            {isOutOfStock && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl px-6 py-2 border-2 border-white uppercase tracking-widest">
-                        {t.soldOut}
-                    </span>
-                </div>
-            )}
+          <div className="flex flex-col-reverse md:flex-row gap-4 items-start">
+             {/* Thumbnails (Left on Desktop, Bottom on Mobile) */}
+             {product.images && product.images.length > 0 && (
+                 <div 
+                    className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto md:w-24 md:max-h-[500px] scrollbar-hide"
+                    data-lenis-prevent
+                 >
+                     {product.images.map((img, idx) => (
+                         <button 
+                            key={idx}
+                            onClick={() => setActiveImage(img)}
+                            className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${activeImage === img ? 'border-vintage-gold ring-1 ring-vintage-gold' : 'border-gray-200 hover:border-vintage-gold/50'}`}
+                         >
+                             <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                         </button>
+                     ))}
+                 </div>
+             )}
+
+             {/* Main Image */}
+             <div 
+                className="relative flex-grow aspect-square w-full rounded-lg bg-white border border-vintage-border dark:border-vintage-border/20 cursor-crosshair group z-20"
+                onMouseEnter={() => setShowZoom(true)}
+                onMouseLeave={() => setShowZoom(false)}
+                onMouseMove={handleMouseMove}
+             >
+                {activeImage ? (
+                  <>
+                    <div className="relative w-full h-full overflow-hidden rounded-lg">
+                        <Image
+                            src={activeImage}
+                            alt={name}
+                            fill
+                            className="object-contain object-center p-4"
+                            priority
+                        />
+                    </div>
+                    
+                    {/* Zoom Lens (The box following the cursor) */}
+                    {showZoom && !isOutOfStock && (
+                        <div 
+                            className="absolute pointer-events-none border border-vintage-gold/50 bg-vintage-gold/10 hidden md:block z-30"
+                            style={{
+                                left: Math.max(0, Math.min(mousePosition.x - 75, typeof window !== 'undefined' ? window.innerWidth : 1000)), // Simple clamping, usually container width needed
+                                top: Math.max(0, Math.min(mousePosition.y - 75, typeof window !== 'undefined' ? window.innerHeight : 1000)),
+                                width: '150px',
+                                height: '150px',
+                                transform: 'translate(0, 0)', // We handle positioning manually for smoother sync
+                                left: `${mousePosition.x - 75}px`,
+                                top: `${mousePosition.y - 75}px`,
+                            }}
+                        />
+                    )}
+
+                    {/* Zoom Window (Flyout) */}
+                    {showZoom && !isOutOfStock && (
+                        <div 
+                            className="hidden md:block absolute z-50 overflow-hidden border-2 border-vintage-gold bg-white shadow-2xl rounded-md"
+                            style={{
+                                left: '105%', 
+                                top: '0',
+                                width: '500px', 
+                                height: '500px',
+                                backgroundImage: `url(${activeImage})`,
+                                backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                                backgroundSize: '250%', // 2.5x Zoom
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        />
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+                )}
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none rounded-lg">
+                        <span className="text-white font-bold text-xl px-6 py-2 border-2 border-white uppercase tracking-widest">
+                            {t.soldOut}
+                        </span>
+                    </div>
+                )}
+              </div>
           </div>
 
           {/* Product Info Section */}
@@ -215,7 +309,7 @@ export default function ProductDetailView({ id }) {
             </div>
 
             <p className="text-2xl font-medium text-vintage-dark dark:text-vintage-cream mb-8">
-              ${product.price}
+              {formatPrice(product.price, language)}
             </p>
 
             <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300 mb-8 max-w-none">
