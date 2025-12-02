@@ -313,7 +313,7 @@ export default function ProductDetailView({ id }) {
             </p>
 
             <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300 mb-8 max-w-none">
-               <p>{description}</p>
+               <p className="whitespace-pre-line">{description}</p>
             </div>
 
             <div className="mt-auto space-y-6">

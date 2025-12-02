@@ -33,17 +33,33 @@ export default function Hero({ texts }) {
         <div className="relative z-10 pb-8 bg-vintage-paper/80 dark:bg-vintage-dark/80 backdrop-blur-sm sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32 transition-colors duration-300">
           
           <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-            <div className="sm:text-center lg:text-left">
-              <h1 className="text-4xl tracking-tight font-extrabold text-vintage-dark dark:text-vintage-cream sm:text-5xl md:text-6xl transition-colors">
-                <span className="block xl:inline font-serif">{t.title1}</span>{' '}
-                <span className="block text-vintage-gold xl:inline font-serif">{t.title2}</span>
+            <div className={`sm:text-center lg:text-left transition-all duration-1000 transform ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              <h1 className="text-5xl tracking-tight font-extrabold text-vintage-dark dark:text-vintage-cream sm:text-6xl md:text-7xl transition-colors mb-6">
+                <span className="block xl:inline font-serif leading-tight">{t.title1}</span>{' '}
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-vintage-gold to-[#C5A059] xl:inline font-serif leading-tight drop-shadow-sm">{t.title2}</span>
               </h1>
-              <p className="mt-3 text-base text-gray-500 dark:text-gray-400 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0 transition-colors font-sans">
+              <p className="mt-3 text-base text-gray-600 dark:text-gray-300 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0 transition-colors font-sans font-light leading-relaxed">
                 {t.description}
               </p>
-              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                <div className="rounded-md shadow vintage-shadow hover:shadow-lg transition-shadow duration-300">
-                  <Button onClick={() => router.push('/shop')} size="lg" className="w-full sm:w-auto bg-vintage-brown hover:bg-vintage-gold text-vintage-cream border-vintage-gold">{t.button1}</Button>
+              <div className="mt-8 sm:mt-10 sm:flex sm:justify-center lg:justify-start gap-4">
+                <div className="rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                  <Button 
+                    onClick={() => router.push('/shop')} 
+                    size="xl" 
+                    className="w-full sm:w-auto px-8 py-4 bg-vintage-brown hover:bg-vintage-gold text-vintage-cream border-none text-lg font-medium tracking-wide"
+                  >
+                    {t.button1}
+                  </Button>
+                </div>
+                <div className="mt-3 sm:mt-0 rounded-full shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                   <Button 
+                        onClick={() => router.push('/about')} 
+                        variant="outline"
+                        size="xl"
+                        className="w-full sm:w-auto px-8 py-4 border-vintage-gold text-vintage-gold hover:bg-vintage-gold/10 text-lg font-medium tracking-wide"
+                   >
+                       Learn More
+                   </Button>
                 </div>
               </div>
             </div>

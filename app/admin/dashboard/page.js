@@ -55,6 +55,27 @@ const translations = {
     },
     pagination: {
       page: "Page"
+    },
+    sort: {
+        lastUpdated: "Last Updated",
+        newestCreated: "Newest Created",
+        oldestCreated: "Oldest Created",
+        priceLowHigh: "Price: Low to High",
+        priceHighLow: "Price: High to Low",
+        qtyLowHigh: "Qty: Low to High",
+        qtyHighLow: "Qty: High to Low",
+        categoryAZ: "Category (A-Z)"
+    },
+    filter: {
+        allCategories: "All Categories",
+        allStatus: "All Status",
+        status: {
+            pending: "Pending",
+            paid: "Paid",
+            shipped: "Shipped",
+            completed: "Completed",
+            cancelled: "Cancelled"
+        }
     }
   },
   VI: {
@@ -100,6 +121,27 @@ const translations = {
     },
     pagination: {
       page: "Trang"
+    },
+    sort: {
+        lastUpdated: "Cập Nhật Gần Nhất",
+        newestCreated: "Mới Tạo Nhất",
+        oldestCreated: "Cũ Nhất",
+        priceLowHigh: "Giá: Thấp đến Cao",
+        priceHighLow: "Giá: Cao đến Thấp",
+        qtyLowHigh: "SL: Thấp đến Cao",
+        qtyHighLow: "SL: Cao đến Thấp",
+        categoryAZ: "Danh Mục (A-Z)"
+    },
+    filter: {
+        allCategories: "Tất Cả Danh Mục",
+        allStatus: "Tất Cả Trạng Thái",
+        status: {
+            pending: "Chờ Xử Lý",
+            paid: "Đã Thanh Toán",
+            shipped: "Đã Gửi Hàng",
+            completed: "Hoàn Thành",
+            cancelled: "Đã Hủy"
+        }
     }
   }
 };
@@ -121,6 +163,8 @@ export default function AdminDashboard() {
 
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterValue, setFilterValue] = useState('All');
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -144,6 +188,12 @@ export default function AdminDashboard() {
       return;
     }
     
+    // Reset filters on tab change
+    setFilterValue('All');
+    setSearchTerm('');
+    setSortConfig({ key: 'createdAt', direction: 'desc' });
+    setCurrentPage(1);
+
     // Initial fetch based on tab
     if (activeTab === 'products') {
         dispatch(fetchProductsRequest());
@@ -315,8 +365,30 @@ export default function AdminDashboard() {
     { en: 'Gloves', vi: 'Găng Tay' }
   ];
 
+  // Sort options
+  const sortOptions = [
+      { label: t.sort.lastUpdated, key: 'updatedAt', direction: 'desc' },
+      { label: t.sort.newestCreated, key: 'createdAt', direction: 'desc' },
+      { label: t.sort.oldestCreated, key: 'createdAt', direction: 'asc' },
+      { label: t.sort.priceLowHigh, key: 'price', direction: 'asc' },
+      { label: t.sort.priceHighLow, key: 'price', direction: 'desc' },
+      { label: t.sort.qtyLowHigh, key: 'quantity', direction: 'asc' },
+      { label: t.sort.qtyHighLow, key: 'quantity', direction: 'desc' },
+      { label: t.sort.categoryAZ, key: 'category', direction: 'asc' },
+  ];
+
   // Filter items based on search term
   const filteredItems = (activeTab === 'products' ? products : orders).filter(item => {
+      // 1. Filter by Dropdown
+      if (filterValue !== 'All') {
+          if (activeTab === 'products') {
+               const catEn = (typeof item.category === 'object' ? item.category.en : item.category) || '';
+               if (catEn !== filterValue) return false;
+          } else {
+               if (item.status !== filterValue) return false;
+          }
+      }
+
       if (!searchTerm) return true;
       const term = searchTerm.toLowerCase();
       if (activeTab === 'products') {
@@ -332,6 +404,26 @@ export default function AdminDashboard() {
           const email = item.email?.toLowerCase() || '';
           return id.includes(term) || user.includes(term) || email.includes(term);
       }
+  }).sort((a, b) => {
+      if (activeTab === 'products') {
+          let valA = a[sortConfig.key];
+          let valB = b[sortConfig.key];
+
+          // Handle special keys
+          if (sortConfig.key === 'category') {
+             valA = (typeof a.category === 'object' ? a.category.en : a.category) || '';
+             valB = (typeof b.category === 'object' ? b.category.en : b.category) || '';
+          } else if (sortConfig.key === 'createdAt' || sortConfig.key === 'updatedAt') {
+             valA = new Date(valA || 0).getTime();
+             valB = new Date(valB || 0).getTime();
+          }
+
+          if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+          if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+          return 0;
+      }
+      // Default for orders (Newest first)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   // Pagination Logic
@@ -355,6 +447,43 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-serif font-bold text-vintage-dark">{t.title}</h1>
           
           <div className="flex items-center gap-4 w-full sm:w-auto">
+              {/* Sort Dropdown (Products Only) */}
+              {activeTab === 'products' && (
+                  <select
+                      value={`${sortConfig.key}-${sortConfig.direction}`}
+                      onChange={(e) => { 
+                          const [key, direction] = e.target.value.split('-');
+                          setSortConfig({ key, direction }); 
+                          setCurrentPage(1); 
+                      }}
+                      className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
+                  >
+                      {sortOptions.map((opt, idx) => (
+                          <option key={idx} value={`${opt.key}-${opt.direction}`}>{opt.label}</option>
+                      ))}
+                  </select>
+              )}
+
+              {/* Filter Dropdown */}
+              <select
+                  value={filterValue}
+                  onChange={(e) => { setFilterValue(e.target.value); setCurrentPage(1); }}
+                  className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
+              >
+                  <option value="All">{activeTab === 'products' ? t.filter.allCategories : t.filter.allStatus}</option>
+                  {activeTab === 'products' ? (
+                      categories.map(cat => (
+                          <option key={cat.en} value={cat.en}>{cat.en} / {cat.vi}</option>
+                      ))
+                  ) : (
+                      ['pending', 'paid', 'shipped', 'completed', 'cancelled'].map(status => (
+                          <option key={status} value={status} className="capitalize">
+                             {t.filter.status[status] || status}
+                          </option>
+                      ))
+                  )}
+              </select>
+
               {/* Search Input */}
               <div className="relative flex-grow sm:flex-grow-0">
                   <input

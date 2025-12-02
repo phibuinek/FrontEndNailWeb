@@ -82,12 +82,21 @@ export default function ShopView() {
 
   // Extract unique categories from products
   const categories = useMemo(() => {
-    const uniqueCats = new Set();
+    const uniqueCats = new Map(); // Use Map to store unique English keys and their display labels
     products.forEach(p => {
-      const catName = typeof p.category === 'object' ? p.category[langKey] : p.category;
-      uniqueCats.add(catName);
+      // Get English name as the unique key (fallback to string if not object)
+      const key = typeof p.category === 'object' ? p.category['en'] : p.category;
+      // Get Display name based on current language
+      const label = typeof p.category === 'object' ? p.category[langKey] : p.category;
+      
+      if (key && !uniqueCats.has(key)) {
+          uniqueCats.set(key, label);
+      }
     });
-    return Array.from(uniqueCats).sort();
+    // Convert Map to array of objects and sort by label
+    return Array.from(uniqueCats.entries())
+        .map(([key, label]) => ({ key, label }))
+        .sort((a, b) => a.label.localeCompare(b.label));
   }, [products, langKey]);
 
   // Filter and Sort Logic
@@ -104,11 +113,11 @@ export default function ShopView() {
         });
     }
 
-    // 1. Filter by Category
+    // 1. Filter by Category (Compare with English key)
     if (selectedCategory !== 'All') {
       result = result.filter(p => {
-        const catName = typeof p.category === 'object' ? p.category[langKey] : p.category;
-        return catName === selectedCategory;
+        const catKey = typeof p.category === 'object' ? p.category['en'] : p.category;
+        return catKey === selectedCategory;
       });
     }
 
@@ -116,19 +125,15 @@ export default function ShopView() {
     if (sortBy === 'priceAsc') {
       result.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'priceDesc') {
-      // Change from priceDesc to Best Sellers (sold count) if using best-sellers link
-      // But here we keep priceDesc as literal price high to low
       result.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'bestSellers') {
-      // New sort option for sold count
       result.sort((a, b) => (b.sold || 0) - (a.sold || 0));
     } else {
-      // Default 'newest'
       result.sort((a, b) => b.id - a.id);
     }
 
     return result;
-  }, [products, selectedCategory, sortBy, searchQuery, langKey]);
+  }, [products, selectedCategory, sortBy, searchQuery]); // Remove langKey from dependency as filtering logic is lang-agnostic now
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -222,7 +227,7 @@ export default function ShopView() {
                 >
                     <option value="All" className="bg-white dark:bg-vintage-dark">{t.allCategories}</option>
                     {categories.map(cat => (
-                        <option key={cat} value={cat} className="bg-white dark:bg-vintage-dark">{cat}</option>
+                        <option key={cat.key} value={cat.key} className="bg-white dark:bg-vintage-dark">{cat.label}</option>
                     ))}
                 </select>
             </div>
