@@ -65,8 +65,7 @@ const translations = {
         priceLowHigh: "Price: Low to High",
         priceHighLow: "Price: High to Low",
         qtyLowHigh: "Qty: Low to High",
-        qtyHighLow: "Qty: High to Low",
-        categoryAZ: "Category (A-Z)"
+        qtyHighLow: "Qty: High to Low"
     },
     filter: {
         allCategories: "All Categories",
@@ -132,8 +131,7 @@ const translations = {
         priceLowHigh: "Giá: Thấp đến Cao",
         priceHighLow: "Giá: Cao đến Thấp",
         qtyLowHigh: "SL: Thấp đến Cao",
-        qtyHighLow: "SL: Cao đến Thấp",
-        categoryAZ: "Danh Mục (A-Z)"
+        qtyHighLow: "SL: Cao đến Thấp"
     },
     filter: {
         allCategories: "Tất Cả Danh Mục",
@@ -379,7 +377,6 @@ export default function AdminDashboard() {
       { label: t.sort.priceHighLow, key: 'price', direction: 'desc' },
       { label: t.sort.qtyLowHigh, key: 'quantity', direction: 'asc' },
       { label: t.sort.qtyHighLow, key: 'quantity', direction: 'desc' },
-      { label: t.sort.categoryAZ, key: 'category', direction: 'asc' },
   ];
 
   const orderSortOptions = [
@@ -419,10 +416,7 @@ export default function AdminDashboard() {
           let valA = a[sortConfig.key];
           let valB = b[sortConfig.key];
 
-          if (sortConfig.key === 'category' && selectedCategory !== 'All') {
-             valA = (typeof a.category === 'object' ? a.category.en : a.category) || '';
-             valB = (typeof b.category === 'object' ? b.category.en : b.category) || '';
-          } else if (sortConfig.key === 'createdAt') {
+          if (sortConfig.key === 'createdAt') {
              valA = new Date(valA || a.updatedAt || 0).getTime();
              valB = new Date(valB || b.updatedAt || 0).getTime();
           } else if (sortConfig.key === 'updatedAt') {
