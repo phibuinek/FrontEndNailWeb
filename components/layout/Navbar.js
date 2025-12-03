@@ -107,6 +107,7 @@ export default function Navbar() {
     
     // Redundant clear for safety and immediate local state update
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('username');
@@ -119,8 +120,8 @@ export default function Navbar() {
   };
 
   const navText = {
-    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi,", login: "Login" },
-    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào,", login: "Đăng Nhập" }
+    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi,", login: "Login", profile: "My Profile" },
+    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào,", login: "Đăng Nhập", profile: "Hồ Sơ" }
   };
 
   const t = navText[langState];
@@ -187,10 +188,10 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Search Toggle */}
             <div className="relative flex items-center">
                 <button 
                     onClick={() => setIsSearchOpen(!isSearchOpen)}
+
                     className={`text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10 ${isSearchOpen ? 'text-vintage-gold' : ''}`}
                 >
                   <Search className="w-5 h-5" />
@@ -216,17 +217,19 @@ export default function Navbar() {
                 )}
             </div>
             
-            <Link 
-                href="/cart" 
-                className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-vintage-rose text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-vintage-dark">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+            {!isAdmin && (
+                <Link 
+                    href="/cart" 
+                    className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute top-0 right-0 bg-vintage-rose text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-vintage-dark">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+            )}
             
             {/* User Icon / Dropdown */}
             <div 
@@ -258,6 +261,14 @@ export default function Navbar() {
                           <p className="text-sm font-medium text-vintage-dark dark:text-vintage-cream truncate">{username}</p>
                       </div>
                       
+                      <Link 
+                        href="/profile" 
+                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2"
+                      >
+                          <User className="w-4 h-4" />
+                          {t.profile}
+                      </Link>
+
                       {isAdmin && (
                           <Link 
                             href="/admin/dashboard" 
@@ -330,6 +341,11 @@ export default function Navbar() {
              {username ? (
                 <div className="border-t border-vintage-border/30 pt-2 mt-2">
                     <div className="px-3 py-2 text-xs text-gray-500">{t.welcome} {username}</div>
+                    
+                    <Link href="/profile" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
+                         <User className="w-4 h-4" /> {t.profile}
+                    </Link>
+
                     {isAdmin && (
                         <Link href="/admin/dashboard" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
                              <LayoutDashboard className="w-4 h-4" /> {t.dashboard}

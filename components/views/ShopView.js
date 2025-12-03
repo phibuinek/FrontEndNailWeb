@@ -172,18 +172,78 @@ export default function ShopView() {
     return <div className="min-h-screen bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500" />;
   }
 
+  const highlightStats = [
+    { label: language === 'VI' ? 'Bộ sưu tập' : 'Curated Sets', value: '120+', detail: language === 'VI' ? 'Sản phẩm thủ công' : 'Hand-picked products' },
+    { label: language === 'VI' ? 'Khách hàng' : 'Clients', value: '4.8★', detail: language === 'VI' ? 'Đánh giá trung bình' : 'Average rating' },
+    { label: language === 'VI' ? 'Phong cách' : 'Heritage', value: 'Vintage', detail: language === 'VI' ? 'Từ 1998' : 'Since 1998' },
+  ];
+
+  const curatedCollections = [
+    { key: 'Gel Polish', label: language === 'VI' ? 'Bộ sơn gel cổ điển' : 'Classic Gel Sets', color: 'from-[#f7d8c6] to-[#f3b8a1]' },
+    { key: 'Tools & Accessories', label: language === 'VI' ? 'Dụng cụ thủ công' : 'Artisan Tools', color: 'from-[#f0e4cf] to-[#d4c3aa]' },
+    { key: 'Treatments', label: language === 'VI' ? 'Liệu trình spa' : 'Spa Treatments', color: 'from-[#f8e7dc] to-[#f1cab4]' },
+  ];
+
   return (
     <main className="min-h-screen flex flex-col bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
       <Navbar />
       
-      <div className="py-12 bg-vintage-paper dark:bg-vintage-dark/50 border-b border-vintage-border dark:border-vintage-border/10 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-serif font-bold text-vintage-dark dark:text-vintage-gold transition-colors duration-500">
-              {searchQuery ? `Search Results for "${searchQuery}"` : t.title}
-          </h1>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto transition-colors duration-500">
-            {t.description}
-          </p>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#fef6ed] via-[#fbe7d3] to-transparent dark:from-[#2b1f1a] dark:via-[#3a2b24] opacity-90 pointer-events-none" />
+        <div className="relative py-16 border-b border-vintage-border/30 dark:border-vintage-border/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              <div className="space-y-6">
+                <p className="uppercase tracking-[0.6em] text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">Curated atelier</p>
+                <h1 className="relative text-[2.4rem] md:text-[3.2rem] lg:text-[3.7rem] font-serif text-vintage-dark dark:text-vintage-cream leading-tight tracking-tight">
+                  <span className="inline-block px-4 py-2 bg-white/70 dark:bg-black/30 text-[0.9rem] uppercase tracking-[0.5em] text-gray-500 mb-4 border border-vintage-border/50 dark:border-white/10 rounded-full">
+                    {language === 'VI' ? 'Tuyển chọn thủ công' : 'Curated selection'}
+                  </span>
+                  <span className="block font-light">{searchQuery ? `“${searchQuery}”` : 'Vintage Atelier'}</span>
+                  <span className="text-vintage-gold block font-normal text-[2.2rem] md:text-[2.6rem] leading-tight mt-2 italic">
+                    {language === 'VI' ? 'Bộ sưu tập thủ công' : 'Handcrafted collections'}
+                  </span>
+                  <span className="absolute -left-6 top-6 w-16 h-16 border border-vintage-gold/60 rounded-full opacity-30 pointer-events-none" />
+                </h1>
+                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-xl font-light leading-relaxed bg-white/60 dark:bg-black/20 px-4 py-3 rounded-xl border border-vintage-border/30 dark:border-white/10">
+                  {t.description} {language === 'VI' ? 'Mỗi món mang dấu ấn cổ điển và sự tinh xảo của nghệ nhân.' : 'Each piece carries a nostalgic charm and artisan craftsmanship.'}
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  {highlightStats.map((stat) => (
+                    <div key={stat.label} className="flex flex-col bg-white/80 dark:bg-vintage-dark/50 border border-vintage-border/40 dark:border-vintage-border/20 rounded-lg px-4 py-3 min-w-[130px] shadow-sm">
+                      <span className="text-2xl font-serif text-vintage-gold">{stat.value}</span>
+                      <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream">{stat.label}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{stat.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-[#f6d7c6] via-transparent to-transparent opacity-40 blur-3xl" />
+                <div className="relative grid grid-cols-2 gap-4">
+                  {curatedCollections.map((collection) => (
+                    <button
+                      key={collection.key}
+                      onClick={() => {
+                        setSelectedCategory(collection.key);
+                        updateUrl('category', collection.key);
+                      }}
+                      className={`p-4 rounded-2xl bg-gradient-to-br ${collection.color} border border-white/70 shadow-lg text-left transition-transform hover:-translate-y-1`}
+                    >
+                      <p className="text-xs uppercase tracking-[0.5em] text-gray-500 font-semibold">Edition</p>
+                      <p className="text-lg font-serif font-bold text-vintage-dark">{collection.label}</p>
+                      <span className="inline-flex items-center gap-1 text-sm text-vintage-dark/80 mt-2 font-medium">
+                        {language === 'VI' ? 'Khám phá' : 'Explore'}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

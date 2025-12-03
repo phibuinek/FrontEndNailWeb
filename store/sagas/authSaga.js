@@ -1,7 +1,25 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { loginSuccess, loginFailure, registerSuccess, registerFailure, setAuth } from '../slices/authSlice';
+import { loginSuccess, loginFailure, registerSuccess, registerFailure, setAuth, refreshTokenSuccess, refreshTokenFailure, logout } from '../slices/authSlice';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function persistAuthToStorage(data) {
+  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem('refresh_token', data.refresh_token);
+  localStorage.setItem('userRole', data.role);
+
+  if (data.username) {
+    localStorage.setItem('username', data.username);
+  } else {
+    console.warn('Auth response missing username');
+  }
+
+  if (data.role === 'admin') {
+    localStorage.setItem('isAdmin', 'true');
+  } else {
+    localStorage.removeItem('isAdmin');
+  }
+}
 
 function* handleLogin(action) {
   try {
@@ -13,35 +31,9 @@ function* handleLogin(action) {
 
     if (res.ok) {
       const data = yield res.json();
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('userRole', data.role);
-      
-      if (data.username) {
-        localStorage.setItem('username', data.username);
-      } else {
-        console.warn('Login success but username is missing in response');
-      }
-
-      if (data.role === 'admin') {
-         localStorage.setItem('isAdmin', 'true');
-      } else {
-         // Ensure isAdmin is cleared if not admin, to prevent leftover state from previous user
-         localStorage.removeItem('isAdmin');
-      }
-      
-      // Dispatch custom event for non-React components if needed (like Navbar used to)
+      persistAuthToStorage(data);
       window.dispatchEvent(new Event('auth-change'));
-      
       yield put(loginSuccess(data));
-      
-      // Redirect logic could be here or in component
-      if (action.payload.router) {
-          if (data.role === 'admin') {
-              action.payload.router.push('/admin/dashboard');
-          } else {
-              action.payload.router.push('/');
-          }
-      }
     } else {
       yield put(loginFailure('Invalid credentials'));
     }
@@ -60,21 +52,9 @@ function* handleRegister(action) {
 
     if (res.ok) {
       const data = yield res.json();
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('userRole', data.role);
-      
-      if (data.username) {
-          localStorage.setItem('username', data.username);
-      } else {
-          console.warn('Register success but username is missing in response');
-      }
-      
+      persistAuthToStorage(data);
       window.dispatchEvent(new Event('auth-change'));
-      
       yield put(registerSuccess(data));
-       if (action.payload.router) {
-           action.payload.router.push('/');
-       }
     } else {
       const errorData = yield res.json();
       yield put(registerFailure(errorData.message || 'Registration failed'));
@@ -94,9 +74,43 @@ function* handleCheckAuth() {
     }
 }
 
+function* handleRefreshToken() {
+  try {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      yield put(refreshTokenFailure());
+      return;
+    }
+
+    const res = yield call(fetch, `${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Unable to refresh token');
+    }
+
+    const data = yield res.json();
+    persistAuthToStorage(data);
+    window.dispatchEvent(new Event('auth-change'));
+    yield put(refreshTokenSuccess(data));
+  } catch (error) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('isAdmin');
+    yield put(logout());
+    yield put(refreshTokenFailure());
+  }
+}
+
 export default function* authSaga() {
   yield takeLatest('auth/loginRequest', handleLogin);
   yield takeLatest('auth/registerRequest', handleRegister);
   yield takeLatest('auth/checkAuth', handleCheckAuth);
+  yield takeLatest('auth/refreshTokenRequest', handleRefreshToken);
 }
 

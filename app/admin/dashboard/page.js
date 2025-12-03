@@ -10,6 +10,7 @@ import {
     fetchProductsRequest, addProductRequest, updateProductRequest, deleteProductRequest 
 } from '@/store/slices/productsSlice';
 import { useLanguage } from '@/context/LanguageContext';
+import { formatPrice } from '@/utils/formatPrice';
 
 const translations = {
   EN: {
@@ -43,6 +44,7 @@ const translations = {
       nameVi: "Name (Vietnamese)",
       category: "Category",
       price: "Price ($)",
+      discount: "Discount (%)",
       qty: "Quantity",
       descEn: "Description (English)",
       descVi: "Description (Vietnamese)",
@@ -57,7 +59,7 @@ const translations = {
       page: "Page"
     },
     sort: {
-        lastUpdated: "Last Updated",
+        lastUpdated: "Newest Update",
         newestCreated: "Newest Created",
         oldestCreated: "Oldest Created",
         priceLowHigh: "Price: Low to High",
@@ -109,6 +111,7 @@ const translations = {
       nameVi: "Tên (Tiếng Việt)",
       category: "Danh Mục",
       price: "Giá ($)",
+      discount: "Giảm Giá (%)",
       qty: "Số Lượng",
       descEn: "Mô Tả (Tiếng Anh)",
       descVi: "Mô Tả (Tiếng Việt)",
@@ -219,7 +222,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
       setOrdersLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
       try {
           const token = localStorage.getItem('access_token');
           const res = await fetch(`${API_URL}/orders`, {
@@ -251,7 +254,7 @@ export default function AdminDashboard() {
     }
 
     const token = localStorage.getItem('access_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     try {
       const res = await fetch(`${API_URL}/products/upload`, {
@@ -316,6 +319,7 @@ export default function AdminDashboard() {
     const payload = {
         ...currentProduct,
         price: Number(currentProduct.price),
+        discount: Number(currentProduct.discount || 0),
         quantity: Number(currentProduct.quantity),
         rating: Number(currentProduct.rating || 5)
     };
@@ -334,6 +338,7 @@ export default function AdminDashboard() {
       description: { en: '', vi: '' },
       category: { en: 'Acrylic', vi: 'Acrylic' },
       price: 0,
+      discount: 0,
       quantity: 0,
       image: '',
       images: [],
@@ -366,7 +371,7 @@ export default function AdminDashboard() {
   ];
 
   // Sort options
-  const sortOptions = [
+  const productSortOptions = [
       { label: t.sort.lastUpdated, key: 'updatedAt', direction: 'desc' },
       { label: t.sort.newestCreated, key: 'createdAt', direction: 'desc' },
       { label: t.sort.oldestCreated, key: 'createdAt', direction: 'asc' },
@@ -375,6 +380,11 @@ export default function AdminDashboard() {
       { label: t.sort.qtyLowHigh, key: 'quantity', direction: 'asc' },
       { label: t.sort.qtyHighLow, key: 'quantity', direction: 'desc' },
       { label: t.sort.categoryAZ, key: 'category', direction: 'asc' },
+  ];
+
+  const orderSortOptions = [
+      { label: t.sort.lastUpdated, key: 'createdAt', direction: 'desc' },
+      { label: t.sort.oldestCreated, key: 'createdAt', direction: 'asc' },
   ];
 
   // Filter items based on search term
@@ -409,21 +419,36 @@ export default function AdminDashboard() {
           let valA = a[sortConfig.key];
           let valB = b[sortConfig.key];
 
-          // Handle special keys
-          if (sortConfig.key === 'category') {
+          if (sortConfig.key === 'category' && selectedCategory !== 'All') {
              valA = (typeof a.category === 'object' ? a.category.en : a.category) || '';
              valB = (typeof b.category === 'object' ? b.category.en : b.category) || '';
-          } else if (sortConfig.key === 'createdAt' || sortConfig.key === 'updatedAt') {
-             valA = new Date(valA || 0).getTime();
-             valB = new Date(valB || 0).getTime();
+          } else if (sortConfig.key === 'createdAt') {
+             valA = new Date(valA || a.updatedAt || 0).getTime();
+             valB = new Date(valB || b.updatedAt || 0).getTime();
+          } else if (sortConfig.key === 'updatedAt') {
+             valA = new Date(valA || a.createdAt || 0).getTime();
+             valB = new Date(valB || b.createdAt || 0).getTime();
           }
 
           if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
           if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
           return 0;
       }
-      // Default for orders (Newest first)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+
+      let orderValA = a[sortConfig.key];
+      let orderValB = b[sortConfig.key];
+
+      if (sortConfig.key === 'createdAt') {
+          orderValA = new Date(orderValA || 0).getTime();
+          orderValB = new Date(orderValB || 0).getTime();
+      } else if (sortConfig.key === 'totalAmount') {
+          orderValA = orderValA || 0;
+          orderValB = orderValB || 0;
+      }
+
+      if (orderValA < orderValB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (orderValA > orderValB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
   });
 
   // Pagination Logic
@@ -447,22 +472,20 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-serif font-bold text-vintage-dark">{t.title}</h1>
           
           <div className="flex items-center gap-4 w-full sm:w-auto">
-              {/* Sort Dropdown (Products Only) */}
-              {activeTab === 'products' && (
-                  <select
-                      value={`${sortConfig.key}-${sortConfig.direction}`}
-                      onChange={(e) => { 
-                          const [key, direction] = e.target.value.split('-');
-                          setSortConfig({ key, direction }); 
-                          setCurrentPage(1); 
-                      }}
-                      className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
-                  >
-                      {sortOptions.map((opt, idx) => (
-                          <option key={idx} value={`${opt.key}-${opt.direction}`}>{opt.label}</option>
-                      ))}
-                  </select>
-              )}
+              {/* Sort Dropdown */}
+              <select
+                  value={`${sortConfig.key}-${sortConfig.direction}`}
+                  onChange={(e) => { 
+                      const [key, direction] = e.target.value.split('-');
+                      setSortConfig({ key, direction }); 
+                      setCurrentPage(1); 
+                  }}
+                  className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
+              >
+                  {(activeTab === 'products' ? productSortOptions : orderSortOptions).map((opt, idx) => (
+                      <option key={idx} value={`${opt.key}-${opt.direction}`}>{opt.label}</option>
+                  ))}
+              </select>
 
               {/* Filter Dropdown */}
               <select
@@ -609,7 +632,9 @@ export default function AdminDashboard() {
                             {order.items.map(i => i.name).join(', ')}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${(order.totalAmount / 100).toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatPrice(order.totalAmount / 100, language)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{order.paymentMethod === 'credit_card' ? 'Stripe' : order.paymentMethod}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -719,8 +744,8 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              {/* Price & Quantity */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Price, Discount & Quantity */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.price}</label>
                   <input
@@ -730,6 +755,17 @@ export default function AdminDashboard() {
                     required
                     value={currentProduct.price}
                     onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.form.discount}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={currentProduct.discount || 0}
+                    onChange={(e) => setCurrentProduct({...currentProduct, discount: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-vintage-gold text-gray-900 bg-white"
                   />
                 </div>

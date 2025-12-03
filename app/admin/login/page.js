@@ -10,13 +10,37 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-      router.push('/admin/dashboard');
-    } else {
-      alert('Invalid credentials');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, pass: password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Đăng nhập thất bại');
+      }
+
+      const data = await response.json();
+
+      if (data.role === 'admin') {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('userRole', data.role);
+        localStorage.setItem('username', data.username);
+        router.push('/admin/dashboard');
+      } else {
+        alert('Bạn không có quyền truy cập Admin');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Tên đăng nhập hoặc mật khẩu không đúng');
     }
   };
 

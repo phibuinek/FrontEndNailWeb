@@ -6,7 +6,7 @@ import {
   productOperationFailure
 } from '../slices/productsSlice';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function* fetchProducts() {
   try {

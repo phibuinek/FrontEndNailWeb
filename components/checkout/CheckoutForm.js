@@ -242,7 +242,7 @@ export default function CheckoutForm() {
                     price: item.price,
                     quantity: item.quantity
                 })),
-                totalAmount: amount,
+                totalAmount: Math.round(amount * 100), // Save in cents to match Stripe and Admin Dashboard logic
                 paymentMethod: paymentMethod,
                 shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`,
                 status: paymentStatus // 'pending' or 'paid'
@@ -301,7 +301,7 @@ export default function CheckoutForm() {
     }
 
     const token = localStorage.getItem('access_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backendnailweb.onrender.com';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     try {
         // 1. Create PaymentIntent

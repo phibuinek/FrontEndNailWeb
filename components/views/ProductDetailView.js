@@ -189,7 +189,14 @@ export default function ProductDetailView({ id }) {
   
   const quantity = product.quantity || 0;
   const sold = product.sold || 0;
+  const discount = product.discount || 0;
   const isOutOfStock = quantity === 0;
+  const isAdmin = typeof window !== 'undefined' ? localStorage.getItem('isAdmin') : false;
+
+  // Calculate discounted price
+  const discountedPrice = discount > 0 
+    ? product.price * (1 - discount / 100) 
+    : product.price;
 
   return (
     <div className="min-h-screen bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500 flex flex-col">
@@ -308,23 +315,43 @@ export default function ProductDetailView({ id }) {
               </span>
             </div>
 
-            <p className="text-2xl font-medium text-vintage-dark dark:text-vintage-cream mb-8">
-              {formatPrice(product.price, language)}
-            </p>
+            <div className="mb-8 flex items-center gap-4">
+                {discount > 0 ? (
+                    <>
+                        <p className="text-3xl font-medium text-red-600">
+                          {formatPrice(discountedPrice, language)}
+                        </p>
+                        <div className="flex flex-col">
+                            <span className="text-lg text-gray-500 line-through">
+                                {formatPrice(product.price, language)}
+                            </span>
+                            <span className="text-sm font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded max-w-max">
+                                Save {discount}%
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-3xl font-medium text-vintage-dark dark:text-vintage-cream">
+                      {formatPrice(product.price, language)}
+                    </p>
+                )}
+            </div>
 
             <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300 mb-8 max-w-none">
                <p className="whitespace-pre-line">{description}</p>
             </div>
 
             <div className="mt-auto space-y-6">
-              <Button
-                size="lg"
-                className="w-full py-4 text-lg"
-                onClick={() => addToCart(product)}
-                disabled={isOutOfStock}
-              >
-                {isOutOfStock ? t.soldOut : t.addToCart}
-              </Button>
+              {!isAdmin && (
+                  <Button
+                    size="lg"
+                    className="w-full py-4 text-lg"
+                    onClick={() => addToCart({ ...product, price: discountedPrice })}
+                    disabled={isOutOfStock}
+                  >
+                    {isOutOfStock ? t.soldOut : t.addToCart}
+                  </Button>
+              )}
 
               {/* Shipping Estimator */}
               <div className="bg-gray-50 dark:bg-vintage-dark/30 p-6 rounded-lg border border-vintage-border dark:border-vintage-border/20">

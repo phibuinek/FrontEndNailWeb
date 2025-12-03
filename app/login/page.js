@@ -17,8 +17,20 @@ export default function LoginPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    dispatch(loginRequest({ username, pass: password, router }));
+    // Remove router from payload to fix non-serializable error
+    dispatch(loginRequest({ username, pass: password }));
   };
+
+  // Handle navigation based on auth state changes
+  useEffect(() => {
+      if (isAuthenticated) {
+          if (role === 'admin') {
+              router.push('/admin/dashboard');
+          } else {
+              router.push('/');
+          }
+      }
+  }, [isAuthenticated, role, router]);
 
   useEffect(() => {
       if (error) {

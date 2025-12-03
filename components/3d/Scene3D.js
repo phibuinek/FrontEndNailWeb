@@ -53,9 +53,15 @@ function NailFile({ position, rotation }) {
     });
     return (
         <group ref={ref} position={position} rotation={rotation}>
-            <RoundedBox args={[0.4, 2.4, 0.02]} radius={0.2} smoothness={8}><meshStandardMaterial color="#8B5A2B" roughness={0.8} /></RoundedBox>
-            <mesh position={[0, 0, 0.011]}><planeGeometry args={[0.35, 2.3]} /><meshStandardMaterial color="#592828" roughness={1} /></mesh>
-            <mesh position={[0, 0, -0.011]} rotation={[0, Math.PI, 0]}><planeGeometry args={[0.35, 2.3]} /><meshStandardMaterial color="#222222" roughness={1} /></mesh>
+            <RoundedBox args={[0.4, 2.4, 0.02]} radius={0.2} smoothness={8}>
+                <meshStandardMaterial color="#8B5A2B" roughness={0.8} />
+            </RoundedBox>
+            <RoundedBox args={[0.38, 2.36, 0.005]} radius={0.19} smoothness={6} position={[0, 0, 0.011]}>
+                <meshStandardMaterial color="#592828" roughness={0.95} metalness={0.05} />
+            </RoundedBox>
+            <RoundedBox args={[0.38, 2.36, 0.005]} radius={0.19} smoothness={6} position={[0, 0, -0.011]} rotation={[0, Math.PI, 0]}>
+                <meshStandardMaterial color="#222222" roughness={0.95} metalness={0.05} />
+            </RoundedBox>
         </group>
     );
 }
@@ -237,12 +243,14 @@ export default function Scene3D() {
 
                 <FlowerPetal position={[-1.2, -0.4, 1.2]} rotation={[0, 0, 0.5]} color="#C5A059" />
                 <FlowerPetal position={[1.5, 0.6, -1.0]} rotation={[0.5, 0, 0]} color="#8C5E58" />
-                <FlowerPetal position={[0.0, 1.6, 0.5]} rotation={[1, 1, 1]} color="#F5E6D3" />
+                {/* Moved petal away from bottle cap */}
+                <FlowerPetal position={[-0.6, 1.9, 0.5]} rotation={[1, 1, 1]} color="#F5E6D3" />
 
                 <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
                     <Pearl position={[0.7, -1.3, 1.2]} />
                     <Pearl position={[-1.3, 1.4, -0.8]} />
-                    <Pearl position={[0.3, 1.8, -0.2]} />
+                    {/* Moved pearl further up and right */}
+                    <Pearl position={[0.8, 2.2, -0.5]} />
                 </Float>
             </group>
         </Float>
