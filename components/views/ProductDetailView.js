@@ -203,7 +203,7 @@ export default function ProductDetailView({ id }) {
       <Navbar />
 
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 mb-16">
           
           {/* Image Section */}
           <div className="flex flex-col-reverse md:flex-row gap-4 items-start">
@@ -337,8 +337,22 @@ export default function ProductDetailView({ id }) {
                 )}
             </div>
 
-            <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300 mb-8 max-w-none">
-               <p className="whitespace-pre-line">{description}</p>
+            {/* Description Section */}
+            <div className="mb-8">
+              <h2 className="text-xl font-serif font-semibold text-vintage-dark dark:text-vintage-cream mb-4 pb-2 border-b border-vintage-border dark:border-vintage-border/20">
+                {t.description}
+              </h2>
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line space-y-4">
+                  {description ? (
+                    <p className="text-base md:text-lg">{description}</p>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 italic">
+                      {language === 'VI' ? 'Chưa có mô tả sản phẩm' : 'No product description available'}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="mt-auto space-y-6">
@@ -470,6 +484,103 @@ export default function ProductDetailView({ id }) {
                 <div className="flex items-center gap-2 justify-center sm:justify-start">
                     <RotateCcw className="w-5 h-5 text-vintage-gold" />
                     <span>{t.returns}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Information Section */}
+        <div className="mt-16 border-t border-vintage-border dark:border-vintage-border/20 pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Product Details */}
+            <div className="bg-white dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
+              <h3 className="text-xl font-serif font-semibold text-vintage-dark dark:text-vintage-cream mb-4">
+                {language === 'VI' ? 'Chi Tiết Sản Phẩm' : 'Product Details'}
+              </h3>
+              <dl className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                  <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {language === 'VI' ? 'Danh Mục' : 'Category'}
+                  </dt>
+                  <dd className="text-sm font-semibold text-vintage-dark dark:text-vintage-cream">
+                    {category}
+                  </dd>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                  <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {language === 'VI' ? 'Đánh Giá' : 'Rating'}
+                  </dt>
+                  <dd className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-vintage-gold text-vintage-gold" />
+                    <span className="text-sm font-semibold text-vintage-dark dark:text-vintage-cream">
+                      {product.rating?.toFixed(1) || 'N/A'}
+                    </span>
+                  </dd>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                  <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {language === 'VI' ? 'Đã Bán' : 'Sold'}
+                  </dt>
+                  <dd className="text-sm font-semibold text-vintage-dark dark:text-vintage-cream">
+                    {sold}
+                  </dd>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {language === 'VI' ? 'Tồn Kho' : 'Stock'}
+                  </dt>
+                  <dd className={`text-sm font-semibold ${quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {quantity > 0 ? `${quantity} ${language === 'VI' ? 'sản phẩm' : 'items'}` : (language === 'VI' ? 'Hết hàng' : 'Out of Stock')}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Shipping & Returns Info */}
+            <div className="bg-white dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
+              <h3 className="text-xl font-serif font-semibold text-vintage-dark dark:text-vintage-cream mb-4">
+                {t.shipping}
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Truck className="w-5 h-5 text-vintage-gold mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-vintage-dark dark:text-vintage-cream mb-1">
+                      {t.freeShipping}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {language === 'VI' 
+                        ? 'Đơn hàng trên $50 được miễn phí vận chuyển toàn quốc' 
+                        : 'Orders over $50 qualify for free shipping nationwide'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <RotateCcw className="w-5 h-5 text-vintage-gold mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-vintage-dark dark:text-vintage-cream mb-1">
+                      {t.returns}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {language === 'VI' 
+                        ? 'Bạn có thể trả hàng trong vòng 30 ngày kể từ ngày nhận hàng' 
+                        : 'You can return items within 30 days of receiving your order'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="w-5 h-5 text-vintage-gold mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-vintage-dark dark:text-vintage-cream mb-1">
+                      {t.secure}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {language === 'VI' 
+                        ? 'Thanh toán được mã hóa và bảo mật hoàn toàn' 
+                        : 'All payments are encrypted and fully secure'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
