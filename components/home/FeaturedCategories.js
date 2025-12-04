@@ -21,24 +21,31 @@ export default function FeaturedCategories({ language = 'EN' }) {
       explore: "Explore"
   };
 
+  // Use English keys for URL (ShopView filters by English key)
+  const categoryKeys = {
+    cat1: 'Gel Polish',
+    cat2: 'Nail Tips & Glue',
+    cat3: 'Tools & Accessories'
+  };
+
   const categories = [
     { 
         id: 1, 
         name: t.cat1, 
         image: "/images/SonGel.jpg", 
-        link: `/shop?category=${encodeURIComponent(t.cat1)}`
+        link: `/shop?category=${encodeURIComponent(categoryKeys.cat1)}`
     },
     { 
         id: 2, 
         name: t.cat2, 
         image: "/images/MongGia.jpg", 
-        link: `/shop?category=${encodeURIComponent(t.cat2)}`
+        link: `/shop?category=${encodeURIComponent(categoryKeys.cat2)}`
     },
     { 
         id: 3, 
         name: t.cat3, 
         image: "/images/DungCu.jpg", 
-        link: `/shop?category=${encodeURIComponent(t.cat3)}`
+        link: `/shop?category=${encodeURIComponent(categoryKeys.cat3)}`
     }
   ];
 

@@ -190,37 +190,37 @@ export default function ShopView() {
       
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#fef6ed] via-[#fbe7d3] to-transparent dark:from-[#2b1f1a] dark:via-[#3a2b24] opacity-90 pointer-events-none" />
-        <div className="relative py-16 border-b border-vintage-border/30 dark:border-vintage-border/10">
+        <div className="relative py-8 sm:py-12 md:py-16 border-b border-vintage-border/30 dark:border-vintage-border/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              <div className="space-y-6">
-                <p className="uppercase tracking-[0.6em] text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">Curated atelier</p>
-                <h1 className="relative text-[2.4rem] md:text-[3.2rem] lg:text-[3.7rem] font-serif text-vintage-dark dark:text-vintage-cream leading-tight tracking-tight">
-                  <span className="inline-block px-4 py-2 bg-white/70 dark:bg-black/30 text-[0.9rem] uppercase tracking-[0.5em] text-gray-500 mb-4 border border-vintage-border/50 dark:border-white/10 rounded-full">
+            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-center">
+              <div className="space-y-4 sm:space-y-6">
+                <p className="uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[10px] sm:text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">Curated atelier</p>
+                <h1 className="relative text-2xl sm:text-[2.4rem] md:text-[3.2rem] lg:text-[3.7rem] font-serif text-vintage-dark dark:text-vintage-cream leading-tight tracking-tight">
+                  <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/70 dark:bg-black/30 text-[0.75rem] sm:text-[0.9rem] uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gray-500 mb-3 sm:mb-4 border border-vintage-border/50 dark:border-white/10 rounded-full">
                     {language === 'VI' ? 'Tuyển chọn thủ công' : 'Curated selection'}
                   </span>
-                  <span className="block font-light">{searchQuery ? `“${searchQuery}”` : 'Vintage Atelier'}</span>
-                  <span className="text-vintage-gold block font-normal text-[2.2rem] md:text-[2.6rem] leading-tight mt-2 italic">
+                  <span className="block font-light">{searchQuery ? `"${searchQuery}"` : 'Vintage Atelier'}</span>
+                  <span className="text-vintage-gold block font-normal text-xl sm:text-[2.2rem] md:text-[2.6rem] leading-tight mt-2 italic">
                     {language === 'VI' ? 'Bộ sưu tập thủ công' : 'Handcrafted collections'}
                   </span>
-                  <span className="absolute -left-6 top-6 w-16 h-16 border border-vintage-gold/60 rounded-full opacity-30 pointer-events-none" />
+                  <span className="absolute -left-4 sm:-left-6 top-4 sm:top-6 w-12 h-12 sm:w-16 sm:h-16 border border-vintage-gold/60 rounded-full opacity-30 pointer-events-none" />
                 </h1>
-                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-xl font-light leading-relaxed bg-white/60 dark:bg-black/20 px-4 py-3 rounded-xl border border-vintage-border/30 dark:border-white/10">
+                <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-xl font-light leading-relaxed bg-white/60 dark:bg-black/20 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-vintage-border/30 dark:border-white/10">
                   {t.description} {language === 'VI' ? 'Mỗi món mang dấu ấn cổ điển và sự tinh xảo của nghệ nhân.' : 'Each piece carries a nostalgic charm and artisan craftsmanship.'}
                 </p>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-2 sm:gap-4">
                   {highlightStats.map((stat) => (
-                    <div key={stat.label} className="flex flex-col bg-white/80 dark:bg-vintage-dark/50 border border-vintage-border/40 dark:border-vintage-border/20 rounded-lg px-4 py-3 min-w-[130px] shadow-sm">
-                      <span className="text-2xl font-serif text-vintage-gold">{stat.value}</span>
-                      <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream">{stat.label}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{stat.detail}</span>
+                    <div key={stat.label} className="flex flex-col bg-white/80 dark:bg-vintage-dark/50 border border-vintage-border/40 dark:border-vintage-border/20 rounded-lg px-3 py-2 sm:px-4 sm:py-3 min-w-[100px] sm:min-w-[130px] shadow-sm">
+                      <span className="text-xl sm:text-2xl font-serif text-vintage-gold">{stat.value}</span>
+                      <span className="text-xs sm:text-sm font-medium text-vintage-dark dark:text-vintage-cream">{stat.label}</span>
+                      <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{stat.detail}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-tr from-[#f6d7c6] via-transparent to-transparent opacity-40 blur-3xl" />
-                <div className="relative grid grid-cols-2 gap-4">
+              <div className="relative mt-6 md:mt-0">
+                <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-tr from-[#f6d7c6] via-transparent to-transparent opacity-40 blur-3xl" />
+                <div className="relative grid grid-cols-2 gap-3 sm:gap-4">
                   {curatedCollections.map((collection) => (
                     <button
                       key={collection.key}
@@ -228,13 +228,13 @@ export default function ShopView() {
                         setSelectedCategory(collection.key);
                         updateUrl('category', collection.key);
                       }}
-                      className={`p-4 rounded-2xl bg-gradient-to-br ${collection.color} border border-white/70 shadow-lg text-left transition-transform hover:-translate-y-1`}
+                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${collection.color} border border-white/70 shadow-lg text-left transition-transform hover:-translate-y-1`}
                     >
-                      <p className="text-xs uppercase tracking-[0.5em] text-gray-500 font-semibold">Edition</p>
-                      <p className="text-lg font-serif font-bold text-vintage-dark">{collection.label}</p>
-                      <span className="inline-flex items-center gap-1 text-sm text-vintage-dark/80 mt-2 font-medium">
+                      <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gray-500 font-semibold">Edition</p>
+                      <p className="text-sm sm:text-lg font-serif font-bold text-vintage-dark mt-1 sm:mt-0">{collection.label}</p>
+                      <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-vintage-dark/80 mt-2 font-medium">
                         {language === 'VI' ? 'Khám phá' : 'Explore'}
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </span>
@@ -247,43 +247,42 @@ export default function ShopView() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
         {/* Filters and Sort Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white dark:bg-vintage-dark/40 p-4 rounded-lg border border-vintage-border dark:border-vintage-border/20 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-white dark:bg-vintage-dark/40 p-3 sm:p-4 rounded-lg border border-vintage-border dark:border-vintage-border/20 shadow-sm">
             
             {/* Search Filter */}
-            <div className="flex items-center gap-2 w-full md:w-auto flex-grow md:mr-4">
+            <div className="flex items-center gap-2 w-full md:w-auto flex-grow md:mr-4 order-1">
                 <div className="relative w-full">
                     <input 
                         type="text" 
-                        placeholder="Search products..." 
+                        placeholder={language === 'VI' ? "Tìm kiếm sản phẩm..." : "Search products..."}
                         value={searchQuery}
                         onChange={(e) => {
                             setSearchQuery(e.target.value);
-                            // Optional: Debounce URL update or update on enter
                         }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 updateUrl('search', searchQuery);
                             }
                         }}
-                        onBlur={() => updateUrl('search', searchQuery)} // Update URL on blur to sync
-                        className="w-full pl-10 pr-4 py-1.5 text-sm bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream transition-colors"
+                        onBlur={() => updateUrl('search', searchQuery)}
+                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream transition-colors"
                     />
                     <div className="absolute left-0 top-1/2 transform -translate-y-1/2 text-vintage-gold">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     </div>
                 </div>
             </div>
 
             {/* Category Filter */}
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                <Filter className="w-5 h-5 text-vintage-gold" />
-                <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.filterTitle}:</span>
+            <div className="flex items-center gap-2 w-full md:w-auto order-2 md:order-2">
+                <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-vintage-gold flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.filterTitle}:</span>
                 <select 
                     value={selectedCategory}
                     onChange={handleCategoryChange}
-                    className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
+                    className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-xs sm:text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="All" className="bg-white dark:bg-vintage-dark">{t.allCategories}</option>
                     {categories.map(cat => (
@@ -293,13 +292,13 @@ export default function ShopView() {
             </div>
 
             {/* Sort Filter */}
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                <ArrowUpDown className="w-4 h-4 text-vintage-gold" />
-                <span className="text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.sortTitle}:</span>
+            <div className="flex items-center gap-2 w-full md:w-auto order-3 md:order-3">
+                <ArrowUpDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-vintage-gold flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium text-vintage-dark dark:text-vintage-cream whitespace-nowrap">{t.sortTitle}:</span>
                 <select 
                     value={sortBy}
                     onChange={handleSortChange}
-                    className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
+                    className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-xs sm:text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
                     <option value="newest" className="bg-white dark:bg-vintage-dark">{t.sortNewest}</option>
                     <option value="bestSellers" className="bg-white dark:bg-vintage-dark">{t.sortBestSellers}</option>
@@ -330,26 +329,73 @@ export default function ShopView() {
         
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="mt-12 flex justify-center items-center gap-4 pb-16">
+          <div className="mt-12 flex flex-wrap justify-center items-center gap-2 sm:gap-3 pb-16">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="flex items-center gap-1 px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300"
+              className="flex items-center gap-1 px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300 text-sm sm:text-base cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
-              {t.prev}
+              <span className="hidden sm:inline">{t.prev}</span>
             </button>
             
-            <span className="text-vintage-dark dark:text-vintage-gold font-medium">
-              {t.page} {currentPage} / {totalPages}
-            </span>
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Always show first page */}
+              {currentPage > 3 && totalPages > 5 && (
+                <>
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className="px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold transition-all duration-300 text-sm sm:text-base cursor-pointer"
+                  >
+                    1
+                  </button>
+                  {currentPage > 4 && <span className="px-2 text-vintage-dark dark:text-vintage-cream">...</span>}
+                </>
+              )}
+
+              {/* Show pages around current page */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  if (totalPages <= 7) return true; // Show all if 7 or fewer pages
+                  if (currentPage <= 3) return page <= 5; // Show first 5 if near start
+                  if (currentPage >= totalPages - 2) return page >= totalPages - 4; // Show last 5 if near end
+                  return Math.abs(page - currentPage) <= 2; // Show 2 pages on each side
+                })
+                .map(page => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 sm:px-4 py-2 border rounded-sm transition-all duration-300 text-sm sm:text-base cursor-pointer ${
+                      page === currentPage
+                        ? 'bg-vintage-gold text-white border-vintage-gold font-semibold'
+                        : 'border-vintage-border text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {/* Always show last page */}
+              {currentPage < totalPages - 2 && totalPages > 5 && (
+                <>
+                  {currentPage < totalPages - 3 && <span className="px-2 text-vintage-dark dark:text-vintage-cream">...</span>}
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className="px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold transition-all duration-300 text-sm sm:text-base cursor-pointer"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+            </div>
             
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300"
+              className="flex items-center gap-1 px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300 text-sm sm:text-base cursor-pointer"
             >
-              {t.next}
+              <span className="hidden sm:inline">{t.next}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

@@ -54,16 +54,16 @@ export default function ProductCard({ product }) {
     <div className="group relative bg-white dark:bg-vintage-dark/70 border border-vintage-border/50 dark:border-vintage-border/10 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-vintage-gold/10 via-transparent to-pink-200/20 dark:from-vintage-gold/20" />
       <Link href={`/product/${product.id}`} className="block h-full w-full">
-        <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-vintage-paper/70 dark:bg-vintage-dark/40 lg:aspect-none lg:h-60 relative">
+        <div className="aspect-square w-full overflow-hidden bg-vintage-paper/70 dark:bg-vintage-dark/40 relative">
           {/* Sale Badge */}
           {discount > 0 && !isOutOfStock && (
-              <div className="absolute top-3 right-3 z-10 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm tracking-wider">
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 bg-red-600 text-white text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-sm tracking-wider">
                   -{discount}%
               </div>
           )}
 
           {/* Vintage frame */}
-          <div className="absolute inset-4 border border-white/70 dark:border-white/10 rounded-[22px] opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none" />
+          <div className="absolute inset-2 sm:inset-4 border border-white/70 dark:border-white/10 rounded-xl sm:rounded-[22px] opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none" />
 
           {/* Placeholder image logic - use Next.js Image if available, else fallback */}
           {product.image ? (
@@ -72,59 +72,61 @@ export default function ProductCard({ product }) {
                       src={product.image}
                       alt={name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
                   />
                    {isOutOfStock && (
                     <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
-                      <span className="text-white font-bold px-3 py-1 border border-white">{t.outOfStock}</span>
+                      <span className="text-white text-xs sm:text-sm font-bold px-2 py-1 sm:px-3 sm:py-1 border border-white">{t.outOfStock}</span>
                     </div>
                   )}
                </div>
           ) : (
-              <div className="h-full w-full bg-vintage-paper dark:bg-vintage-dark/50 flex items-center justify-center text-vintage-brown/50 dark:text-vintage-cream/30">
+              <div className="h-full w-full bg-vintage-paper dark:bg-vintage-dark/50 flex items-center justify-center text-vintage-brown/50 dark:text-vintage-cream/30 text-xs sm:text-sm">
               Product Image
               </div>
           )}
          
         </div>
       </Link>
-      <div className="p-5 flex flex-col gap-4 flex-grow relative">
-        <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-gray-400">
-          <span>{categoryLabel}</span>
-          <span className="flex items-center gap-1 text-vintage-gold">
-            <Feather className="w-3 h-3" /> Atelier
+      <div className="p-3 sm:p-4 md:p-5 flex flex-col gap-3 sm:gap-4 flex-grow relative">
+        <div className="flex items-center justify-between text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-gray-400">
+          <span className="truncate pr-2">{categoryLabel}</span>
+          <span className="flex items-center gap-1 text-vintage-gold flex-shrink-0">
+            <Feather className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> <span className="hidden sm:inline">Atelier</span>
           </span>
         </div>
 
-        <div className="space-y-2 flex-1">
-          <h3 className="text-lg font-serif font-semibold text-vintage-dark dark:text-vintage-cream line-clamp-1">
+        <div className="space-y-1.5 sm:space-y-2 flex-1">
+          <h3 className="text-base sm:text-lg font-serif font-semibold text-vintage-dark dark:text-vintage-cream line-clamp-2 sm:line-clamp-1">
             <Link href={`/product/${product.id}`}>
               <span aria-hidden="true" className="absolute inset-0" />
               {name}
             </Link>
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{description}</p>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{description}</p>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex justify-between items-center text-xs">
-            <p className="text-vintage-gold font-medium flex items-center gap-1">
-              <Star className="w-4 h-4 fill-current" /> {Number(ratingValue).toFixed(1)}
-              <span className="text-gray-400 ml-1">({sold} {t.sold})</span>
+        <div className="space-y-2 sm:space-y-3">
+          <div className="flex justify-between items-center text-[10px] sm:text-xs">
+            <p className="text-vintage-gold font-medium flex items-center gap-0.5 sm:gap-1">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-current" /> {Number(ratingValue).toFixed(1)}
+              <span className="text-gray-400 ml-0.5 sm:ml-1 hidden sm:inline">({sold} {t.sold})</span>
             </p>
-            <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <Package className="w-3 h-3" /> {quantity} {t.left}
+            <p className="text-gray-500 dark:text-gray-400 flex items-center gap-0.5 sm:gap-1">
+              <Package className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> <span className="hidden sm:inline">{quantity} {t.left}</span>
             </p>
           </div>
 
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
+          <div className="flex justify-between items-end gap-2">
+            <div className="flex flex-col min-w-0 flex-1">
                 {discount > 0 && (
-                    <span className="text-xs text-gray-500 line-through mb-0.5">
+                    <span className="text-[10px] sm:text-xs text-gray-500 line-through mb-0.5">
                         {formatPrice(product.price, language)}
                     </span>
                 )}
-                <p className={`text-lg font-medium ${discount > 0 ? 'text-red-600' : 'text-vintage-dark dark:text-vintage-cream'}`}>
+                <p className={`text-base sm:text-lg font-medium truncate ${discount > 0 ? 'text-red-600' : 'text-vintage-dark dark:text-vintage-cream'}`}>
                     {formatPrice(discountedPrice, language)}
                 </p>
             </div>
@@ -133,7 +135,7 @@ export default function ProductCard({ product }) {
                 <Button 
                   size="sm"   
                   variant="outline" 
-                  className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-vintage-gold group-hover:text-white transition-all"
+                  className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-vintage-gold group-hover:text-white transition-all text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 flex-shrink-0"
                   disabled={isOutOfStock}
                   onClick={() => addToCart({ ...product, price: discountedPrice })}
                 >
@@ -144,9 +146,9 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
-      <div className="absolute bottom-1 left-6 text-xs uppercase tracking-[0.4em] text-vintage-dark/50 dark:text-vintage-cream/60 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-        View details
-        <span className="w-8 h-px bg-current" />
+      <div className="absolute bottom-1 left-3 sm:left-6 text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-vintage-dark/50 dark:text-vintage-cream/60 flex items-center gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+        <span className="hidden sm:inline">View details</span>
+        <span className="w-4 sm:w-8 h-px bg-current" />
       </div>
     </div>
   );

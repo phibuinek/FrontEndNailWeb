@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
@@ -168,10 +168,11 @@ export default function AdminDashboard() {
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
 
   // Improved Auth Check
   useEffect(() => {
@@ -193,7 +194,6 @@ export default function AdminDashboard() {
     setFilterValue('All');
     setSearchTerm('');
     setSortConfig({ key: 'createdAt', direction: 'desc' });
-    setCurrentPage(1);
 
     // Initial fetch based on tab
     if (activeTab === 'products') {
@@ -454,7 +454,29 @@ export default function AdminDashboard() {
   const paginatedItems = currentItems.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(currentItems.length / itemsPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // Helper function to update URL params
+  const updateUrlParams = (updates) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        params.set(key, value.toString());
+      } else {
+        params.delete(key);
+      }
+    });
+    router.push(`/admin/dashboard?${params.toString()}`);
+  };
+
+  // Update URL params when page changes
+  const paginate = (pageNumber) => {
+    updateUrlParams({ page: pageNumber });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset page to 1 in URL
+  const resetPage = () => {
+    updateUrlParams({ page: 1 });
+  };
 
   if (loading && currentItems.length === 0) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
@@ -472,7 +494,7 @@ export default function AdminDashboard() {
                   onChange={(e) => { 
                       const [key, direction] = e.target.value.split('-');
                       setSortConfig({ key, direction }); 
-                      setCurrentPage(1); 
+                      resetPage();
                   }}
                   className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
               >
@@ -484,7 +506,7 @@ export default function AdminDashboard() {
               {/* Filter Dropdown */}
               <select
                   value={filterValue}
-                  onChange={(e) => { setFilterValue(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => { setFilterValue(e.target.value); resetPage(); }}
                   className="w-full sm:w-48 px-3 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white cursor-pointer text-sm"
               >
                   <option value="All">{activeTab === 'products' ? t.filter.allCategories : t.filter.allStatus}</option>
@@ -507,7 +529,7 @@ export default function AdminDashboard() {
                       type="text"
                       placeholder="Search..."
                       value={searchTerm}
-                      onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                      onChange={(e) => { setSearchTerm(e.target.value); resetPage(); }}
                       className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-md border border-vintage-border focus:outline-none focus:ring-1 focus:ring-vintage-gold bg-white"
                   />
                   <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -524,7 +546,7 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="flex space-x-4 mb-6 border-b border-gray-200">
             <button
-                onClick={() => { setActiveTab('products'); setCurrentPage(1); }}
+                onClick={() => { setActiveTab('products'); resetPage(); }}
                 className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
                     activeTab === 'products' 
                     ? 'border-b-2 border-vintage-gold text-vintage-gold' 
@@ -535,7 +557,7 @@ export default function AdminDashboard() {
                 {t.tabs.products}
             </button>
             <button
-                onClick={() => { setActiveTab('orders'); setCurrentPage(1); }}
+                onClick={() => { setActiveTab('orders'); resetPage(); }}
                 className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
                     activeTab === 'orders' 
                     ? 'border-b-2 border-vintage-gold text-vintage-gold' 
@@ -653,26 +675,75 @@ export default function AdminDashboard() {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-4 mt-6">
-             <button 
-                onClick={() => paginate(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className={`p-2 rounded-full border border-vintage-border ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-vintage-dark hover:bg-white hover:shadow-sm'}`}
-             >
-               <ChevronLeft className="w-5 h-5" />
-             </button>
-             
-             <span className="text-sm font-medium text-gray-700">
-               {t.pagination.page} {currentPage} / {totalPages}
-             </span>
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mt-6">
+            <button 
+              onClick={() => paginate(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300 text-sm sm:text-base cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">{language === 'VI' ? 'Trước' : 'Previous'}</span>
+            </button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Always show first page */}
+              {currentPage > 3 && totalPages > 5 && (
+                <>
+                  <button
+                    onClick={() => paginate(1)}
+                    className="px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold transition-all duration-300 text-sm sm:text-base cursor-pointer"
+                  >
+                    1
+                  </button>
+                  {currentPage > 4 && <span className="px-2 text-vintage-dark dark:text-vintage-cream">...</span>}
+                </>
+              )}
 
-             <button 
-                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className={`p-2 rounded-full border border-vintage-border ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-vintage-dark hover:bg-white hover:shadow-sm'}`}
-             >
-               <ChevronRight className="w-5 h-5" />
-             </button>
+              {/* Show pages around current page */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  if (totalPages <= 7) return true; // Show all if 7 or fewer pages
+                  if (currentPage <= 3) return page <= 5; // Show first 5 if near start
+                  if (currentPage >= totalPages - 2) return page >= totalPages - 4; // Show last 5 if near end
+                  return Math.abs(page - currentPage) <= 2; // Show 2 pages on each side
+                })
+                .map(page => (
+                  <button
+                    key={page}
+                    onClick={() => paginate(page)}
+                    className={`px-3 sm:px-4 py-2 border rounded-sm transition-all duration-300 text-sm sm:text-base cursor-pointer ${
+                      page === currentPage
+                        ? 'bg-vintage-gold text-white border-vintage-gold font-semibold'
+                        : 'border-vintage-border text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {/* Always show last page */}
+              {currentPage < totalPages - 2 && totalPages > 5 && (
+                <>
+                  {currentPage < totalPages - 3 && <span className="px-2 text-vintage-dark dark:text-vintage-cream">...</span>}
+                  <button
+                    onClick={() => paginate(totalPages)}
+                    className="px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold transition-all duration-300 text-sm sm:text-base cursor-pointer"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+            </div>
+            
+            <button 
+              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 sm:px-4 py-2 border border-vintage-border rounded-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-gold hover:text-white hover:border-vintage-gold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-vintage-dark dark:disabled:hover:text-vintage-cream transition-all duration-300 text-sm sm:text-base cursor-pointer"
+            >
+              <span className="hidden sm:inline">{language === 'VI' ? 'Sau' : 'Next'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

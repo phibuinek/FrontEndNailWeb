@@ -18,19 +18,19 @@ function NailBrush(props) {
         const curve = new THREE.SplineCurve([
             new THREE.Vector2(0.02, 0), new THREE.Vector2(0.05, 0.2), new THREE.Vector2(0.07, 1.2), new THREE.Vector2(0.06, 2.0), new THREE.Vector2(0.045, 2.5)
         ]);
-        return curve.getPoints(64);
+        return curve.getPoints(32); // Reduced from 64
     }, []);
     const bristlePoints = useMemo(() => {
         const curve = new THREE.SplineCurve([
             new THREE.Vector2(0.09, 0), new THREE.Vector2(0.085, 0.3), new THREE.Vector2(0.06, 0.6), new THREE.Vector2(0, 0.75)
         ]);
-        return curve.getPoints(32);
+        return curve.getPoints(16); // Reduced from 32
     }, []);
     return (
         <group ref={group} {...props}>
-            <mesh position={[0, 0, 0]} castShadow><latheGeometry args={[handlePoints, 64]} /> <meshStandardMaterial color="#2C1B18" roughness={0.2} metalness={0.1} /></mesh>
-            <mesh position={[0, 2.5, 0]} castShadow><cylinderGeometry args={[0.09, 0.045, 0.5, 64]} /> <meshStandardMaterial color="#C5A059" roughness={0.15} metalness={0.9} envMapIntensity={2} /></mesh>
-            <mesh position={[0, 2.75, 0]}><latheGeometry args={[bristlePoints, 32]} /> <meshStandardMaterial color="#8C5E58" roughness={0.5} metalness={0.1} /></mesh>
+            <mesh position={[0, 0, 0]} castShadow><latheGeometry args={[handlePoints, 32]} /> <meshStandardMaterial color="#2C1B18" roughness={0.2} metalness={0.1} /></mesh>
+            <mesh position={[0, 2.5, 0]} castShadow><cylinderGeometry args={[0.09, 0.045, 0.5, 32]} /> <meshStandardMaterial color="#C5A059" roughness={0.15} metalness={0.9} envMapIntensity={2} /></mesh>
+            <mesh position={[0, 2.75, 0]}><latheGeometry args={[bristlePoints, 16]} /> <meshStandardMaterial color="#8C5E58" roughness={0.5} metalness={0.1} /></mesh>
         </group>
     );
 }
@@ -38,29 +38,75 @@ function NailBrush(props) {
 function Pearl({ position }) {
     return (
         <mesh position={position} castShadow>
-            <sphereGeometry args={[0.15, 32, 32]} />
-            <meshPhysicalMaterial color="#FFFDF5" roughness={0.1} metalness={0.1} transmission={0.1} iridescence={1} iridescenceIOR={1.3} clearcoat={1} />
+            <sphereGeometry args={[0.15, 16, 16]} />
+            <meshStandardMaterial color="#FFFDF5" roughness={0.1} metalness={0.1} envMapIntensity={1.5} />
         </mesh>
     );
 }
 
 function NailFile({ position, rotation }) {
     const ref = useRef();
+    
+    // Memoize materials to prevent recreation on each render
+    const baseMaterial = useMemo(() => (
+        <meshStandardMaterial color="#8B5A2B" roughness={0.8} />
+    ), []);
+    
+    const frontMaterial = useMemo(() => (
+        <meshStandardMaterial 
+            color="#592828" 
+            roughness={0.95} 
+            metalness={0.05}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
+        />
+    ), []);
+    
+    const backMaterial = useMemo(() => (
+        <meshStandardMaterial 
+            color="#222222" 
+            roughness={0.95} 
+            metalness={0.05}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+        />
+    ), []);
+    
     useFrame((state) => {
         const t = state.clock.elapsedTime;
-        ref.current.rotation.z = rotation[2] + Math.sin(t * 0.4) * 0.05;
-        ref.current.position.y = position[1] + Math.cos(t * 0.6) * 0.05;
+        if (ref.current) {
+            ref.current.rotation.z = rotation[2] + Math.sin(t * 0.4) * 0.05;
+            ref.current.position.y = position[1] + Math.cos(t * 0.6) * 0.05;
+        }
     });
+    
     return (
         <group ref={ref} position={position} rotation={rotation}>
-            <RoundedBox args={[0.4, 2.4, 0.02]} radius={0.2} smoothness={8}>
-                <meshStandardMaterial color="#8B5A2B" roughness={0.8} />
+            <RoundedBox args={[0.4, 2.4, 0.02]} radius={0.2} smoothness={4} castShadow receiveShadow>
+                {baseMaterial}
             </RoundedBox>
-            <RoundedBox args={[0.38, 2.36, 0.005]} radius={0.19} smoothness={6} position={[0, 0, 0.011]}>
-                <meshStandardMaterial color="#592828" roughness={0.95} metalness={0.05} />
+            <RoundedBox 
+                args={[0.38, 2.36, 0.005]} 
+                radius={0.19} 
+                smoothness={3} 
+                position={[0, 0, 0.02]}
+                castShadow={false}
+                receiveShadow={false}
+            >
+                {frontMaterial}
             </RoundedBox>
-            <RoundedBox args={[0.38, 2.36, 0.005]} radius={0.19} smoothness={6} position={[0, 0, -0.011]} rotation={[0, Math.PI, 0]}>
-                <meshStandardMaterial color="#222222" roughness={0.95} metalness={0.05} />
+            <RoundedBox 
+                args={[0.38, 2.36, 0.005]} 
+                radius={0.19} 
+                smoothness={3} 
+                position={[0, 0, -0.02]} 
+                rotation={[0, Math.PI, 0]}
+                castShadow={false}
+                receiveShadow={false}
+            >
+                {backMaterial}
             </RoundedBox>
         </group>
     );
@@ -75,10 +121,10 @@ function GlitterJar({ position, rotation, color }) {
     });
     return (
         <group ref={ref} position={position} rotation={rotation}>
-            <mesh castShadow receiveShadow><cylinderGeometry args={[0.45, 0.45, 0.5, 8]} /> <MeshTransmissionMaterial thickness={0.5} roughness={0} transmission={1} color="#ffffff" clearcoat={1} chromaticAberration={0.1} distortion={0.2} /></mesh>
+            <mesh castShadow receiveShadow><cylinderGeometry args={[0.45, 0.45, 0.5, 8]} /> <MeshTransmissionMaterial thickness={0.5} roughness={0} transmission={1} color="#ffffff" clearcoat={1} chromaticAberration={0.05} distortion={0.1} resolution={512} /></mesh>
             <mesh position={[0, -0.1, 0]}><cylinderGeometry args={[0.38, 0.38, 0.35, 8]} /> <meshStandardMaterial color={color} roughness={0.5} metalness={0.6} /></mesh>
-            <Sparkles position={[0, -0.1, 0]} scale={[0.35, 0.35, 0.35]} count={30} color={color} size={3} speed={0.2} opacity={0.8} />
-            <group position={[0, 0.3, 0]}><mesh castShadow><cylinderGeometry args={[0.46, 0.46, 0.15, 32]} /> <meshStandardMaterial color="#B8860B" roughness={0.3} metalness={0.7} envMapIntensity={1} /></mesh></group>
+            <Sparkles position={[0, -0.1, 0]} scale={[0.35, 0.35, 0.35]} count={20} color={color} size={3} speed={0.2} opacity={0.8} />
+            <group position={[0, 0.3, 0]}><mesh castShadow><cylinderGeometry args={[0.46, 0.46, 0.15, 16]} /> <meshStandardMaterial color="#B8860B" roughness={0.3} metalness={0.7} envMapIntensity={1} /></mesh></group>
         </group>
     );
 }
@@ -93,8 +139,8 @@ function NailTip({ position, rotation, color, scale }) {
     });
     return (
         <mesh ref={ref} position={position} rotation={rotation} scale={scale} castShadow>
-            <sphereGeometry args={[0.15, 32, 32]} />
-            <meshPhysicalMaterial color={color} roughness={0.4} metalness={0.1} transmission={0.2} thickness={0.5} clearcoat={0.8} side={THREE.DoubleSide} />
+            <sphereGeometry args={[0.15, 16, 16]} />
+            <meshStandardMaterial color={color} roughness={0.4} metalness={0.1} envMapIntensity={1.2} side={THREE.DoubleSide} />
         </mesh>
     );
 }
@@ -136,30 +182,30 @@ function SquareBottle(props) {
           new THREE.Vector2(0.02, 0.38),  // Rounded tip
           new THREE.Vector2(0.0, 0.4)     // Closed soft tip
       ]);
-      return curve.getPoints(32);
+      return curve.getPoints(16); // Reduced from 32
   }, []);
 
   return (
     <group {...props} ref={meshRef}>
       {/* Square Glass Body */}
-      <RoundedBox args={[1, 1, 1]} radius={0.2} smoothness={4} castShadow receiveShadow>
+      <RoundedBox args={[1, 1, 1]} radius={0.2} smoothness={3} castShadow receiveShadow>
         <MeshTransmissionMaterial 
           backside
           backsideThickness={0.2}
           thickness={0.5}
-          chromaticAberration={0.02}
-          anisotropy={0.1}
-          distortion={0.1}
-          iridescence={0.5}
+          chromaticAberration={0.01}
+          anisotropy={0.05}
+          distortion={0.05}
+          iridescence={0.3}
           roughness={0}
           clearcoat={1}
           color="#ffffff"
-          resolution={1024}
+          resolution={512}
         />
       </RoundedBox>
       
       {/* Liquid Inside - Square */}
-      <RoundedBox args={[0.85, 0.8, 0.85]} radius={0.15} smoothness={4} position={[0, -0.05, 0]}>
+      <RoundedBox args={[0.85, 0.8, 0.85]} radius={0.15} smoothness={3} position={[0, -0.05, 0]}>
         <meshStandardMaterial 
             color="#A65E5E" // Vintage Rose/Red
             roughness={0.1} 
@@ -171,7 +217,7 @@ function SquareBottle(props) {
 
       {/* Bottle Neck */}
       <mesh position={[0, 0.65, 0]}>
-        <cylinderGeometry args={[0.25, 0.25, 0.3, 32]} />
+        <cylinderGeometry args={[0.25, 0.25, 0.3, 16]} />
         <meshStandardMaterial color="#ffffff" roughness={0.1} transparent opacity={0.5} />
       </mesh>
 
@@ -179,7 +225,7 @@ function SquareBottle(props) {
       <group position={[0, 1.8, 0.2]} rotation={[0.2, 0, 0.1]}>
          {/* Cap Body */}
          <mesh position={[0, 0.4, 0]}>
-            <cylinderGeometry args={[0.35, 0.35, 0.8, 64]} />
+            <cylinderGeometry args={[0.35, 0.35, 0.8, 32]} />
             <meshStandardMaterial 
                 color="#C5A059" // Antique Gold
                 roughness={0.15} 
@@ -189,12 +235,12 @@ function SquareBottle(props) {
          </mesh>
          {/* Brush Stem */}
          <mesh position={[0, -0.4, 0]}>
-            <cylinderGeometry args={[0.05, 0.05, 0.8, 16]} />
+            <cylinderGeometry args={[0.05, 0.05, 0.8, 12]} />
             <meshStandardMaterial color="#111" roughness={0.5} />
          </mesh>
          {/* Brush Bristles with Liquid - Soft & Organic */}
          <mesh position={[0, -0.8, 0]} rotation={[Math.PI, 0, 0]}> {/* Flip to point down */}
-            <latheGeometry args={[brushPoints, 32]} />
+            <latheGeometry args={[brushPoints, 16]} />
             <meshStandardMaterial 
                 color="#A65E5E" 
                 roughness={0.2} 
@@ -211,14 +257,32 @@ function SquareBottle(props) {
 export default function Scene3D() {
   return (
     <div className="w-full h-full absolute inset-0 pointer-events-none">
-      <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+      <Canvas 
+        shadows 
+        dpr={[1, 1.5]} 
+        gl={{ 
+          antialias: true, 
+          alpha: true,
+          powerPreference: "high-performance"
+        }}
+        performance={{ min: 0.5 }}
+      >
         <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={30} />
         
         {/* Warm Vintage Lighting */}
         <ambientLight intensity={0.4} color="#FFF5E0" />
-        <SpotLight position={[5, 5, 5]} angle={0.3} penumbra={0.5} intensity={600} castShadow color="#FFF0D0" />
+        <SpotLight 
+          position={[5, 5, 5]} 
+          angle={0.3} 
+          penumbra={0.5} 
+          intensity={600} 
+          castShadow 
+          color="#FFF0D0"
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+        />
         <pointLight position={[-3, 2, -2]} intensity={100} color="#FFD700" />
-        <Environment preset="sunset" blur={0.8} />
+        <Environment preset="sunset" blur={0.5} />
 
         {/* Composition Group - Balanced Layout (Not too tight, not too loose) */}
         <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.2} floatingRange={[-0.1, 0.1]}>
@@ -256,8 +320,8 @@ export default function Scene3D() {
         </Float>
 
         {/* Golden Dust */}
-        <Sparkles count={50} scale={7} size={2} speed={0.4} opacity={0.6} color="#C5A059" />
-        <ContactShadows position={[0, -3.5, 0]} opacity={0.4} scale={10} blur={2.5} far={4} color="#3A2F28" />
+        <Sparkles count={30} scale={7} size={2} speed={0.4} opacity={0.6} color="#C5A059" />
+        <ContactShadows position={[0, -3.5, 0]} opacity={0.4} scale={10} blur={2} far={4} color="#3A2F28" />
         
         <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.5} enablePan={false} maxPolarAngle={Math.PI / 2} minPolarAngle={Math.PI / 3} />
       </Canvas>
