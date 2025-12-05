@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/slices/authSlice';
 
 export default function Navbar() {
@@ -26,6 +26,7 @@ export default function Navbar() {
   const [navSearchTerm, setNavSearchTerm] = useState('');
   const router = useRouter();
   const dispatch = useDispatch();
+  const { isAuthenticated, user: reduxUser, role: reduxRole } = useSelector((state) => state.auth);
   const userMenuRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -50,8 +51,9 @@ export default function Navbar() {
         setMounted(true);
         
         const updateAuthState = () => {
-            const user = localStorage.getItem('username');
-            const admin = localStorage.getItem('isAdmin');
+            // Prefer Redux state, fallback to localStorage
+            const user = reduxUser || localStorage.getItem('username');
+            const admin = reduxRole === 'admin' || localStorage.getItem('isAdmin');
             
             // Only set username if it's valid string and not 'null'/'undefined'
             // Also check if access_token exists, otherwise logout/clear state
@@ -75,13 +77,34 @@ export default function Navbar() {
         window.addEventListener('storage', handleStorageChange);
         
         // Custom event for immediate UI update after login/logout within the same tab
-        window.addEventListener('auth-change', handleStorageChange);
+        const handleAuthChange = () => {
+            // Small delay to ensure localStorage is updated
+            setTimeout(updateAuthState, 50);
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('auth-change', handleAuthChange);
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('auth-change', handleStorageChange);
+            window.removeEventListener('auth-change', handleAuthChange);
         };
-    }, []);
+    }, [reduxUser, reduxRole]);
+
+    // Also update when Redux state changes
+    useEffect(() => {
+        const user = reduxUser || localStorage.getItem('username');
+        const admin = reduxRole === 'admin' || localStorage.getItem('isAdmin');
+        const token = localStorage.getItem('access_token');
+        
+        if (token && user && user !== 'null' && user !== 'undefined') {
+            setUsername(user);
+        } else {
+            setUsername(null);
+        }
+        
+        setIsAdmin(!!admin);
+    }, [isAuthenticated, reduxUser, reduxRole]);
 
   // Handle language transition
   useEffect(() => {

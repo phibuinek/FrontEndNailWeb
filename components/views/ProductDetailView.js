@@ -8,13 +8,13 @@ import { useLanguage } from '@/context/LanguageContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Image from 'next/image';
-import { Star, Truck, ShieldCheck, RotateCcw, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { Star, Truck, ShieldCheck, RotateCcw, ChevronDown, ChevronUp, Lock, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Country, State } from 'country-state-city';
 import Link from 'next/link';
 import { formatPrice } from '@/utils/formatPrice';
 
-const translations = {
+  const translations = {
   EN: {
     addToCart: "Add to Cart",
     soldOut: "Sold Out",
@@ -34,7 +34,8 @@ const translations = {
     shippingPolicy: "Shipping Policy",
     refundPolicy: "Refund Policy",
     paymentSecurity: "Payment & Security",
-    secureText: "Your payment information is processed securely. We do not store credit card details nor have access to your credit card information."
+    secureText: "Your payment information is processed securely. We do not store credit card details nor have access to your credit card information.",
+    quantity: "Quantity"
   },
   VI: {
     addToCart: "Thêm vào giỏ",
@@ -55,7 +56,8 @@ const translations = {
     shippingPolicy: "Chính Sách Vận Chuyển",
     refundPolicy: "Chính Sách Hoàn Tiền",
     paymentSecurity: "Thanh Toán & Bảo Mật",
-    secureText: "Thông tin thanh toán của bạn được xử lý an toàn. Chúng tôi không lưu trữ thông tin thẻ tín dụng cũng như không có quyền truy cập vào thông tin thẻ tín dụng của bạn."
+    secureText: "Thông tin thanh toán của bạn được xử lý an toàn. Chúng tôi không lưu trữ thông tin thẻ tín dụng cũng như không có quyền truy cập vào thông tin thẻ tín dụng của bạn.",
+    quantity: "Số lượng"
   }
 };
 
@@ -98,6 +100,9 @@ export default function ProductDetailView({ id }) {
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  // Purchase Quantity State
+  const [purchaseQuantity, setPurchaseQuantity] = useState(1);
 
   const handleMouseMove = (e) => {
       if (!showZoom) return;
@@ -144,6 +149,13 @@ export default function ProductDetailView({ id }) {
       }
   }, [shippingCountry]);
 
+  // Reset purchase quantity when product changes or stock changes
+  useEffect(() => {
+    if (product?.id) {
+      setPurchaseQuantity(1);
+    }
+  }, [product?.id, product?.quantity]);
+
   const handleEstimateShipping = () => {
       if (!shippingZip) {
           setShippingError(language === 'VI' ? "Vui lòng nhập mã bưu chính" : "Please enter a valid Zip Code");
@@ -187,10 +199,10 @@ export default function ProductDetailView({ id }) {
   const description = typeof product.description === 'object' ? product.description[langKey] : product.description;
   const category = typeof product.category === 'object' ? product.category[langKey] : product.category;
   
-  const quantity = product.quantity || 0;
+  const stockQuantity = product.quantity || 0;
   const sold = product.sold || 0;
   const discount = product.discount || 0;
-  const isOutOfStock = quantity === 0;
+  const isOutOfStock = stockQuantity === 0;
   const isAdmin = typeof window !== 'undefined' ? localStorage.getItem('isAdmin') : false;
 
   // Calculate discounted price
@@ -311,7 +323,7 @@ export default function ProductDetailView({ id }) {
               </span>
                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
                <span className="text-gray-600 dark:text-gray-400 text-sm">
-                {quantity} {t.left}
+                {stockQuantity} {t.left}
               </span>
             </div>
 
@@ -357,14 +369,59 @@ export default function ProductDetailView({ id }) {
 
             <div className="mt-auto space-y-6">
               {!isAdmin && (
+                <>
+                  {/* Quantity Selector */}
+                  <div className="flex flex-col gap-3">
+                    <label className="text-sm font-medium text-vintage-dark dark:text-vintage-cream">
+                      {t.quantity}
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center border border-vintage-border dark:border-vintage-border/20 rounded-md overflow-hidden bg-white dark:bg-vintage-dark/30">
+                        <button
+                          onClick={() => setPurchaseQuantity((prev) => Math.max(1, prev - 1))}
+                          disabled={purchaseQuantity <= 1 || isOutOfStock}
+                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Minus className="w-4 h-4 text-vintage-dark dark:text-vintage-cream" />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          max={stockQuantity}
+                          value={purchaseQuantity}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 1;
+                            const clampedValue = Math.max(1, Math.min(stockQuantity, value));
+                            setPurchaseQuantity(clampedValue);
+                          }}
+                          disabled={isOutOfStock}
+                          className="w-16 text-center text-base font-medium text-vintage-dark dark:text-vintage-cream bg-transparent border-0 focus:outline-none disabled:opacity-50"
+                        />
+                        <button
+                          onClick={() => setPurchaseQuantity((prev) => Math.min(stockQuantity, prev + 1))}
+                          disabled={purchaseQuantity >= stockQuantity || isOutOfStock}
+                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="w-4 h-4 text-vintage-dark dark:text-vintage-cream" />
+                        </button>
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {language === 'VI' 
+                          ? `Còn ${stockQuantity} sản phẩm` 
+                          : `${stockQuantity} available`}
+                      </span>
+                    </div>
+                  </div>
+                  
                   <Button
                     size="lg"
                     className="w-full py-4 text-lg"
-                    onClick={() => addToCart({ ...product, price: discountedPrice })}
+                    onClick={() => addToCart({ ...product, price: discountedPrice }, purchaseQuantity)}
                     disabled={isOutOfStock}
                   >
                     {isOutOfStock ? t.soldOut : t.addToCart}
                   </Button>
+                </>
               )}
 
               {/* Shipping Estimator */}
@@ -530,8 +587,8 @@ export default function ProductDetailView({ id }) {
                   <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {language === 'VI' ? 'Tồn Kho' : 'Stock'}
                   </dt>
-                  <dd className={`text-sm font-semibold ${quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {quantity > 0 ? `${quantity} ${language === 'VI' ? 'sản phẩm' : 'items'}` : (language === 'VI' ? 'Hết hàng' : 'Out of Stock')}
+                  <dd className={`text-sm font-semibold ${stockQuantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {stockQuantity > 0 ? `${stockQuantity} ${language === 'VI' ? 'sản phẩm' : 'items'}` : (language === 'VI' ? 'Hết hàng' : 'Out of Stock')}
                   </dd>
                 </div>
               </dl>

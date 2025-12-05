@@ -18,7 +18,7 @@ const lato = Lato({
 });
 
 export const metadata = {
-  title: "Vintage Nail Supply",
+  title: "Pham's Nail Supplies",
   description: "Premium Vintage Nail Supplies for Professionals",
 };
 

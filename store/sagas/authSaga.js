@@ -89,7 +89,15 @@ function* handleRefreshToken() {
     });
 
     if (!res.ok) {
-      throw new Error('Unable to refresh token');
+      // If refresh fails (403, 401, etc.), clear all tokens
+      // This could be due to expired refresh token, invalid token, or user not found
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('isAdmin');
+      localStorage.removeItem('username');
+      yield put(refreshTokenFailure());
+      return;
     }
 
     const data = yield res.json();
@@ -97,6 +105,13 @@ function* handleRefreshToken() {
     window.dispatchEvent(new Event('auth-change'));
     yield put(refreshTokenSuccess(data));
   } catch (error) {
+    // Silently handle CORS or network errors during refresh
+    // Don't log to console to avoid noise
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('isAdmin');
+    yield put(refreshTokenFailure());
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('username');
