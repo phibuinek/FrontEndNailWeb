@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight, Package, ShoppingBag, Search } from 'lucide-react';
+import { Edit, Trash2, Plus, X, Save, Upload, ChevronLeft, ChevronRight, Package, ShoppingBag, Search, Filter } from 'lucide-react';
 import { 
     fetchProductsRequest, addProductRequest, updateProductRequest, deleteProductRequest 
 } from '@/store/slices/productsSlice';
@@ -28,6 +28,8 @@ const translations = {
       category: "Category",
       price: "Price",
       qty: "Qty",
+      createdAt: "Created Date",
+      updatedAt: "Updated Date",
       actions: "Actions"
     },
     orderTable: {
@@ -76,7 +78,11 @@ const translations = {
             shipped: "Shipped",
             completed: "Completed",
             cancelled: "Cancelled"
-        }
+        },
+        filterByDate: "Filter by Date",
+        startDate: "Start Date",
+        endDate: "End Date",
+        clearFilter: "Clear Filter"
     }
   },
   VI: {
@@ -94,6 +100,8 @@ const translations = {
       category: "Danh Mục",
       price: "Giá",
       qty: "SL",
+      createdAt: "Ngày Tạo",
+      updatedAt: "Ngày Cập Nhật",
       actions: "Thao Tác"
     },
     orderTable: {
@@ -142,7 +150,11 @@ const translations = {
             shipped: "Đã Gửi Hàng",
             completed: "Hoàn Thành",
             cancelled: "Đã Hủy"
-        }
+        },
+        filterByDate: "Lọc Theo Ngày",
+        startDate: "Từ Ngày",
+        endDate: "Đến Ngày",
+        clearFilter: "Xóa Bộ Lọc"
     }
   }
 };
@@ -166,6 +178,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValue, setFilterValue] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [orderStartDate, setOrderStartDate] = useState('');
+  const [orderEndDate, setOrderEndDate] = useState('');
 
   // Pagination State
   const itemsPerPage = 20;
@@ -194,6 +208,8 @@ export default function AdminDashboard() {
     setFilterValue('All');
     setSearchTerm('');
     setSortConfig({ key: 'createdAt', direction: 'desc' });
+    setOrderStartDate('');
+    setOrderEndDate('');
 
     // Initial fetch based on tab
     if (activeTab === 'products') {
@@ -396,6 +412,26 @@ export default function AdminDashboard() {
           }
       }
 
+      // 2. Filter by Date (for orders only)
+      if (activeTab === 'orders' && (orderStartDate || orderEndDate)) {
+          const orderDate = new Date(item.createdAt);
+          orderDate.setHours(0, 0, 0, 0);
+          
+          if (orderStartDate && orderEndDate) {
+              const start = new Date(orderStartDate);
+              const end = new Date(orderEndDate);
+              end.setHours(23, 59, 59, 999);
+              if (orderDate < start || orderDate > end) return false;
+          } else if (orderStartDate) {
+              const start = new Date(orderStartDate);
+              if (orderDate < start) return false;
+          } else if (orderEndDate) {
+              const end = new Date(orderEndDate);
+              end.setHours(23, 59, 59, 999);
+              if (orderDate > end) return false;
+          }
+      }
+
       if (!searchTerm) return true;
       const term = searchTerm.toLowerCase();
       if (activeTab === 'products') {
@@ -569,6 +605,51 @@ export default function AdminDashboard() {
             </button>
         </div>
 
+        {/* Date Filter for Orders */}
+        {activeTab === 'orders' && (
+            <div className="bg-white rounded-lg shadow border border-vintage-border p-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <Filter className="w-4 h-4 text-vintage-gold" />
+                        {t.filter.filterByDate}:
+                    </div>
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">{t.filter.startDate}</label>
+                            <input
+                                type="date"
+                                value={orderStartDate}
+                                onChange={(e) => { setOrderStartDate(e.target.value); resetPage(); }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-vintage-gold text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">{t.filter.endDate}</label>
+                            <input
+                                type="date"
+                                value={orderEndDate}
+                                onChange={(e) => { setOrderEndDate(e.target.value); resetPage(); }}
+                                min={orderStartDate || undefined}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-vintage-gold text-sm"
+                            />
+                        </div>
+                    </div>
+                    {(orderStartDate || orderEndDate) && (
+                        <button
+                            onClick={() => {
+                                setOrderStartDate('');
+                                setOrderEndDate('');
+                                resetPage();
+                            }}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors whitespace-nowrap"
+                        >
+                            {t.filter.clearFilter}
+                        </button>
+                    )}
+                </div>
+            </div>
+        )}
+
         <div className="bg-white rounded-lg shadow overflow-hidden border border-vintage-border overflow-x-auto">
           {activeTab === 'products' ? (
               <table className="min-w-full divide-y divide-gray-200">
@@ -580,6 +661,8 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.category}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.price}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.qty}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.createdAt}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.updatedAt}</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t.table.actions}</th>
                   </tr>
                 </thead>
@@ -603,6 +686,28 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category?.en || product.category}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.price}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.createdAt 
+                          ? new Date(product.createdAt).toLocaleDateString(language === 'VI' ? 'vi-VN' : 'en-US', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {product.updatedAt 
+                          ? new Date(product.updatedAt).toLocaleDateString(language === 'VI' ? 'vi-VN' : 'en-US', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : '-'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button 
                             onClick={() => openEditModal(product)}
