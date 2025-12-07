@@ -15,14 +15,14 @@ export default function ProductCard({ product }) {
 
   const translations = {
     EN: {
-      add: "Add",
+      add: "Add to cart",
       soldOut: "Sold Out",
       outOfStock: "OUT OF STOCK",
       left: "left",
       sold: "sold"
     },
     VI: {
-      add: "Thêm",
+      add: "Thêm vào giỏ hàng",
       soldOut: "Hết Hàng",
       outOfStock: "HẾT HÀNG",
       left: "còn lại",
@@ -99,7 +99,7 @@ export default function ProductCard({ product }) {
         </div>
 
         <div className="space-y-1.5 sm:space-y-2 flex-1">
-          <h3 className="text-base sm:text-lg font-serif font-semibold text-vintage-dark dark:text-vintage-cream line-clamp-2 sm:line-clamp-1">
+          <h3 className="text-sm sm:text-base font-serif font-semibold text-vintage-dark dark:text-vintage-cream line-clamp-2 sm:line-clamp-2 md:line-clamp-3">
             <Link href={`/product/${product.id}`}>
               <span aria-hidden="true" className="absolute inset-0" />
               {name}
@@ -135,7 +135,7 @@ export default function ProductCard({ product }) {
                 <Button 
                   size="sm"   
                   variant="outline" 
-                  className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-vintage-gold group-hover:text-white transition-all text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 flex-shrink-0"
+                  className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-vintage-gold group-hover:text-white transition-all text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 flex-shrink-0 whitespace-nowrap"
                   disabled={isOutOfStock}
                   onClick={() => addToCart({ ...product, price: discountedPrice })}
                 >
@@ -146,9 +146,12 @@ export default function ProductCard({ product }) {
         </div>
       </div>
 
-      <div className="absolute bottom-1 left-3 sm:left-6 text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-vintage-dark/50 dark:text-vintage-cream/60 flex items-center gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-        <span className="hidden sm:inline">View details</span>
-        <span className="w-4 sm:w-8 h-px bg-current" />
+      {/* View details overlay on image */}
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex items-center gap-2 sm:gap-2.5 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none z-30 bg-white/90 dark:bg-vintage-dark/90 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg">
+        <span className="text-[10px] sm:text-xs font-serif font-medium text-vintage-dark dark:text-vintage-cream tracking-wide uppercase">
+          {language === 'VI' ? 'Xem chi tiết' : 'View details'}
+        </span>
+        <div className="w-1 h-1 rounded-full bg-vintage-gold animate-pulse" />
       </div>
     </div>
   );
