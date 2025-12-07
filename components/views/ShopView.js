@@ -357,6 +357,13 @@ export default function ShopView() {
               {/* Show pages around current page */}
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter(page => {
+                  // Exclude pages already shown in "Always show first/last page"
+                  const showFirstPage = currentPage > 3 && totalPages > 5;
+                  const showLastPage = currentPage < totalPages - 2 && totalPages > 5;
+                  
+                  if (showFirstPage && page === 1) return false; // Exclude first page if already shown
+                  if (showLastPage && page === totalPages) return false; // Exclude last page if already shown
+                  
                   if (totalPages <= 7) return true; // Show all if 7 or fewer pages
                   if (currentPage <= 3) return page <= 5; // Show first 5 if near start
                   if (currentPage >= totalPages - 2) return page >= totalPages - 4; // Show last 5 if near end
