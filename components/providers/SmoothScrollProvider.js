@@ -1,7 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Lenis from 'lenis';
+
+function ScrollToTop() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Use a small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { immediate: false });
+      } else {
+        // Fallback if Lenis is not ready
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname, searchParams]);
+
+  return null;
+}
 
 export default function SmoothScrollProvider({ children }) {
   useEffect(() => {
@@ -32,7 +54,14 @@ export default function SmoothScrollProvider({ children }) {
     };
   }, []);
 
-  return <>{children}</>;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <ScrollToTop />
+      </Suspense>
+      {children}
+    </>
+  );
 }
 
 
