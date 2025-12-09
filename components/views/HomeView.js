@@ -76,8 +76,10 @@ export default function HomeView() {
 
   const t = translations[currentLanguage];
 
-  // Display only first 8 products for the homepage
-  const featuredProducts = products.slice(0, 8);
+  // Sort by sold count descending for Featured Collections (top 8 best sellers)
+  const featuredProducts = [...products].sort((a, b) => {
+      return (b.sold || 0) - (a.sold || 0);
+  }).slice(0, 8);
   
   // Sort by createdAt descending for New Arrivals (top 4)
   const newArrivals = [...products].sort((a, b) => {
@@ -125,7 +127,7 @@ export default function HomeView() {
         
         <div className="flex justify-center pb-16 bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
             <Button 
-                onClick={() => router.push('/shop')} 
+                onClick={() => router.push('/shop?sort=bestSellers')} 
                 variant="outline" 
                 className="border-vintage-gold text-vintage-gold hover:bg-vintage-gold hover:text-white px-8 py-3 uppercase tracking-widest transition-all duration-300"
             >
