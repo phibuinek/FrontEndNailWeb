@@ -10,6 +10,7 @@ import FeaturedCategories from '@/components/home/FeaturedCategories';
 import Features from '@/components/home/Features';
 import Newsletter from '@/components/home/Newsletter';
 import ProductGrid from '@/components/product/ProductGrid';
+import ProductCarousel from '@/components/product/ProductCarousel';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -81,10 +82,10 @@ export default function HomeView() {
       return (b.sold || 0) - (a.sold || 0);
   }).slice(0, 8);
   
-  // Sort by createdAt descending for New Arrivals (top 4)
+  // Sort by createdAt descending for New Arrivals (top 8)
   const newArrivals = [...products].sort((a, b) => {
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-  }).slice(0, 4);
+  }).slice(0, 8);
 
   return (
     <main className="min-h-screen flex flex-col bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
@@ -114,11 +115,9 @@ export default function HomeView() {
         {/* Featured Categories */}
         <FeaturedCategories language={currentLanguage} />
 
-        {/* New Arrivals Section */}
+        {/* New Arrivals Section - Carousel */}
         {(newArrivals.length > 0 || productsLoading) && (
-            <div className="bg-vintage-cream dark:bg-vintage-dark pt-12 transition-colors duration-500">
-                <ProductGrid products={newArrivals} title={t.newArrivals} loading={productsLoading} />
-            </div>
+            <ProductCarousel products={newArrivals} title={t.newArrivals} loading={productsLoading} />
         )}
 
         <div id="catalog-section">
