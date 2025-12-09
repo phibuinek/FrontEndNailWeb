@@ -47,7 +47,7 @@ const translations = {
 
 export default function HomeView() {
   const dispatch = useDispatch();
-  const { items } = useSelector((state) => state.products);
+  const { items, loading: productsLoading } = useSelector((state) => state.products);
   // Ensure products is always an array to prevent runtime errors
   const products = Array.isArray(items) ? items : [];
 
@@ -113,14 +113,14 @@ export default function HomeView() {
         <FeaturedCategories language={currentLanguage} />
 
         {/* New Arrivals Section */}
-        {newArrivals.length > 0 && (
+        {(newArrivals.length > 0 || productsLoading) && (
             <div className="bg-vintage-cream dark:bg-vintage-dark pt-12 transition-colors duration-500">
-                <ProductGrid products={newArrivals} title={t.newArrivals} />
+                <ProductGrid products={newArrivals} title={t.newArrivals} loading={productsLoading} />
             </div>
         )}
 
         <div id="catalog-section">
-            <ProductGrid products={featuredProducts} title={t.featuredCollections} />
+            <ProductGrid products={featuredProducts} title={t.featuredCollections} loading={productsLoading} />
         </div>
         
         <div className="flex justify-center pb-16 bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500">
