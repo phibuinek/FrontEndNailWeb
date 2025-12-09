@@ -48,6 +48,25 @@ html.lenis, html.lenis body {
   overscroll-behavior: contain;
 }
 
+/* Success Page Animations */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out;
+}
+
 .lenis.lenis-stopped {
   overflow: hidden;
 }

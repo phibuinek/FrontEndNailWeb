@@ -244,7 +244,9 @@ export default function CheckoutForm() {
                 })),
                 totalAmount: Math.round(amount * 100), // Save in cents to match Stripe and Admin Dashboard logic
                 paymentMethod: paymentMethod,
-                shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`,
+                shippingAddress: deliveryMethod === 'ship' 
+                    ? `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`
+                    : 'Pickup at store',
                 status: paymentStatus // 'pending' or 'paid'
             };
 
@@ -260,9 +262,28 @@ export default function CheckoutForm() {
 
             if (!res.ok) {
                 console.error("Failed to create order", await res.text());
+                return null;
             }
+
+            const order = await res.json();
+            
+            // Send invoice email if payment succeeded
+            if (paymentStatus === 'paid' && order._id) {
+                try {
+                    await fetch(`${API_URL}/orders/${order._id}/send-invoice`, {
+                        method: 'POST',
+                        headers: headers
+                    });
+                } catch (emailError) {
+                    console.error("Failed to send invoice email:", emailError);
+                    // Don't block success if email fails
+                }
+            }
+
+            return order;
         } catch (err) {
             console.error("Error creating order:", err);
+            return null;
         }
     };
 
@@ -270,7 +291,7 @@ export default function CheckoutForm() {
         // Handle Pay at Store logic (Simulated)
         
         // 1. Create Order Record
-        await createOrder('pending');
+        const order = await createOrder('pending');
         
         // 2. Update sold count for store payment as well
         try {
@@ -288,11 +309,13 @@ export default function CheckoutForm() {
             console.error("Failed to update sold count:", updateError);
         }
 
-        setTimeout(() => {
-            clearCart();
+        clearCart();
+        if (order && order._id) {
+            router.push(`/checkout/success?orderId=${order._id}`);
+        } else {
             alert(t.orderPlaced);
             router.push('/');
-        }, 1000);
+        }
         return;
     }
 
@@ -354,7 +377,7 @@ export default function CheckoutForm() {
         } else {
             if (result.paymentIntent.status === 'succeeded') {
                 // 1. Create Order Record
-                await createOrder('paid');
+                const order = await createOrder('paid');
 
                 // Update sold count
                 try {
@@ -374,8 +397,12 @@ export default function CheckoutForm() {
                 }
 
                 clearCart();
-                alert(t.paymentSuccess);
-                router.push('/');
+                if (order && order._id) {
+                    router.push(`/checkout/success?orderId=${order._id}`);
+                } else {
+                    alert(t.paymentSuccess);
+                    router.push('/');
+                }
             }
         }
     } catch (err) {

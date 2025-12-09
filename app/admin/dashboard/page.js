@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
@@ -159,7 +159,7 @@ const translations = {
   }
 };
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const dispatch = useDispatch();
   const { items: products, loading: productsLoading } = useSelector((state) => state.products);
   const { language } = useLanguage();
@@ -1047,5 +1047,17 @@ export default function AdminDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-vintage-cream flex items-center justify-center">
+        <div className="text-vintage-dark">Loading...</div>
+      </div>
+    }>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }
