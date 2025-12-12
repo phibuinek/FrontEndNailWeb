@@ -81,6 +81,18 @@ const authSlice = createSlice({
     },
     refreshTokenFailure: (state) => {
       state.refreshing = false;
+    },
+    changePasswordRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    changePasswordSuccess: (state) => {
+      state.loading = false;
+      state.error = null;
+    },
+    changePasswordFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
     }
   },
 });
@@ -89,7 +101,8 @@ export const {
     loginRequest, loginSuccess, loginFailure, 
     registerRequest, registerSuccess, registerFailure,
     logout, checkAuth, setAuth,
-    refreshTokenRequest, refreshTokenSuccess, refreshTokenFailure
+    refreshTokenRequest, refreshTokenSuccess, refreshTokenFailure,
+    changePasswordRequest, changePasswordSuccess, changePasswordFailure
 } = authSlice.actions;
 
 export default authSlice.reducer;

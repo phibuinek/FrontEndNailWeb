@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { loginSuccess, loginFailure, registerSuccess, registerFailure, setAuth, refreshTokenSuccess, refreshTokenFailure, logout } from '../slices/authSlice';
+import { loginSuccess, loginFailure, registerSuccess, registerFailure, setAuth, refreshTokenSuccess, refreshTokenFailure, logout, changePasswordSuccess, changePasswordFailure } from '../slices/authSlice';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -122,10 +122,39 @@ function* handleRefreshToken() {
   }
 }
 
+function* handleChangePassword(action) {
+  try {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      yield put(changePasswordFailure('Not authenticated'));
+      return;
+    }
+
+    const res = yield call(fetch, `${API_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(action.payload),
+    });
+
+    if (res.ok) {
+      yield put(changePasswordSuccess());
+    } else {
+      const errorData = yield res.json();
+      yield put(changePasswordFailure(errorData.message || 'Failed to change password'));
+    }
+  } catch (error) {
+    yield put(changePasswordFailure(error.message || 'Failed to change password'));
+  }
+}
+
 export default function* authSaga() {
   yield takeLatest('auth/loginRequest', handleLogin);
   yield takeLatest('auth/registerRequest', handleRegister);
   yield takeLatest('auth/checkAuth', handleCheckAuth);
   yield takeLatest('auth/refreshTokenRequest', handleRefreshToken);
+  yield takeLatest('auth/changePasswordRequest', handleChangePassword);
 }
 
