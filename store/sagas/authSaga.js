@@ -35,10 +35,18 @@ function* handleLogin(action) {
       window.dispatchEvent(new Event('auth-change'));
       yield put(loginSuccess(data));
     } else {
-      yield put(loginFailure('Invalid credentials'));
+      // Try to parse error message from response
+      let errorMessage = 'Invalid username or password';
+      try {
+        const errorData = yield res.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        // If response is not JSON, use default message
+      }
+      yield put(loginFailure(errorMessage));
     }
   } catch (error) {
-    yield put(loginFailure(error.message));
+    yield put(loginFailure(error.message || 'Network error. Please try again.'));
   }
 }
 

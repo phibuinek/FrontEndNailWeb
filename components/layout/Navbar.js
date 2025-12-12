@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, ShoppingBag, Menu, X, Moon, Sun, Globe, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Moon, Sun, Globe, User, LogOut, LayoutDashboard, Lock } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useLanguage } from '@/context/LanguageContext';
@@ -143,8 +143,8 @@ export default function Navbar() {
   };
 
   const navText = {
-    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi,", login: "Login", profile: "My Profile" },
-    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào,", login: "Đăng Nhập", profile: "Hồ Sơ" }
+    EN: { home: "Home", shop: "Shop", about: "Our Story", contact: "Contact", logout: "Logout", dashboard: "Dashboard", welcome: "Hi,", login: "Login", profile: "My Profile", changePassword: "Change Password" },
+    VI: { home: "Trang Chủ", shop: "Cửa Hàng", about: "Câu Chuyện", contact: "Liên Hệ", logout: "Đăng Xuất", dashboard: "Quản Lý", welcome: "Chào,", login: "Đăng Nhập", profile: "Hồ Sơ", changePassword: "Đổi Mật Khẩu" }
   };
 
   const t = navText[langState];
@@ -292,6 +292,14 @@ export default function Navbar() {
                           {t.profile}
                       </Link>
 
+                      <Link 
+                        href="/profile/change-password" 
+                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2"
+                      >
+                          <Lock className="w-4 h-4" />
+                          {t.changePassword}
+                      </Link>
+
                       {isAdmin && (
                           <Link 
                             href="/admin/dashboard" 
@@ -367,6 +375,10 @@ export default function Navbar() {
                     
                     <Link href="/profile" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
                          <User className="w-4 h-4" /> {t.profile}
+                    </Link>
+
+                    <Link href="/profile/change-password" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
+                         <Lock className="w-4 h-4" /> {t.changePassword}
                     </Link>
 
                     {isAdmin && (

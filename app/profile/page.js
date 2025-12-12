@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatPrice } from '@/utils/formatPrice';
-import { Package, User, Mail, Calendar, MapPin, Filter, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
-import { changePasswordRequest } from '@/store/slices/authSlice';
+import { Package, User, Mail, Calendar, MapPin, Filter, Lock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 const translations = {
   EN: {
@@ -38,15 +37,7 @@ const translations = {
         completed: "Completed",
         cancelled: "Cancelled"
     },
-    changePassword: "Change Password",
-    currentPassword: "Current Password",
-    newPassword: "New Password",
-    confirmPassword: "Confirm Password",
-    changePasswordBtn: "Change Password",
-    passwordChanged: "Password changed successfully!",
-    passwordMismatch: "New passwords do not match",
-    passwordRequired: "All fields are required",
-    passwordTooShort: "Password must be at least 6 characters"
+    changePassword: "Change Password"
   },
   VI: {
     title: "Hồ Sơ Của Tôi",
@@ -75,15 +66,7 @@ const translations = {
         completed: "Hoàn Thành",
         cancelled: "Đã Hủy"
     },
-    changePassword: "Đổi Mật Khẩu",
-    currentPassword: "Mật Khẩu Hiện Tại",
-    newPassword: "Mật Khẩu Mới",
-    confirmPassword: "Xác Nhận Mật Khẩu",
-    changePasswordBtn: "Đổi Mật Khẩu",
-    passwordChanged: "Đổi mật khẩu thành công!",
-    passwordMismatch: "Mật khẩu mới không khớp",
-    passwordRequired: "Vui lòng điền đầy đủ thông tin",
-    passwordTooShort: "Mật khẩu phải có ít nhất 6 ký tự"
+    changePassword: "Đổi Mật Khẩu"
   }
 };
 
@@ -93,21 +76,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { language } = useLanguage();
   const t = translations[language];
-  const dispatch = useDispatch();
-  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
   
   const isAdmin = typeof window !== 'undefined' ? localStorage.getItem('isAdmin') : false;
 
@@ -152,55 +123,6 @@ export default function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    if (isSubmitting) {
-      if (authError) {
-        setPasswordError(authError);
-        setPasswordSuccess(false);
-        setIsSubmitting(false);
-      } else if (!authLoading && !authError) {
-        // Success case
-        setPasswordSuccess(true);
-        setPasswordError('');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setIsSubmitting(false);
-        setTimeout(() => {
-          setShowChangePassword(false);
-          setPasswordSuccess(false);
-        }, 2000);
-      }
-    }
-  }, [authLoading, authError, isSubmitting]);
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess(false);
-
-    // Validation
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError(t.passwordRequired);
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError(t.passwordTooShort);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError(t.passwordMismatch);
-      return;
-    }
-
-    setIsSubmitting(true);
-    dispatch(changePasswordRequest({
-      oldPassword: currentPassword,
-      newPassword: newPassword
-    }));
-  };
 
   if (loading) {
     return (
@@ -242,130 +164,27 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 
-                {/* Change Password Section */}
+                {/* Change Password Link */}
                 <div className="pt-4 border-t border-vintage-border/50">
-                    {!showChangePassword ? (
-                        <button
-                            onClick={() => setShowChangePassword(true)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-vintage-dark bg-vintage-paper/50 hover:bg-vintage-paper rounded-md transition-colors"
-                        >
-                            <Lock className="w-4 h-4" />
-                            {t.changePassword}
-                        </button>
-                    ) : (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-serif font-semibold text-vintage-dark flex items-center gap-2">
+                    <Link
+                        href="/profile/change-password"
+                        className="flex items-center justify-between group px-4 py-3 bg-vintage-paper/30 hover:bg-vintage-paper/50 rounded-lg transition-all duration-200 border border-vintage-border/50 hover:border-vintage-gold/50"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="bg-vintage-gold/10 p-2 rounded-lg group-hover:bg-vintage-gold/20 transition-colors">
                                 <Lock className="w-5 h-5 text-vintage-gold" />
-                                {t.changePassword}
-                            </h3>
-                            
-                            {passwordSuccess && (
-                                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
-                                    <CheckCircle className="w-4 h-4" />
-                                    {t.passwordChanged}
-                                </div>
-                            )}
-                            
-                            {passwordError && (
-                                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
-                                    <XCircle className="w-4 h-4" />
-                                    {passwordError}
-                                </div>
-                            )}
-                            
-                            <form onSubmit={handleChangePassword} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {t.currentPassword}
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showCurrentPassword ? "text" : "password"}
-                                            value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-vintage-gold"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {t.newPassword}
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showNewPassword ? "text" : "password"}
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-vintage-gold"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewPassword(!showNewPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        {t.confirmPassword}
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-vintage-gold"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div className="flex gap-3">
-                                    <button
-                                        type="submit"
-                                        disabled={authLoading}
-                                        className="flex-1 px-4 py-2 bg-vintage-gold text-white rounded-md hover:bg-vintage-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                                    >
-                                        {authLoading ? '...' : t.changePasswordBtn}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setShowChangePassword(false);
-                                            setCurrentPassword('');
-                                            setNewPassword('');
-                                            setConfirmPassword('');
-                                            setPasswordError('');
-                                            setPasswordSuccess(false);
-                                        }}
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
+                            <div className="text-left">
+                                <p className="text-sm font-medium text-vintage-dark group-hover:text-vintage-gold transition-colors">
+                                    {t.changePassword}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Update your account password
+                                </p>
+                            </div>
                         </div>
-                    )}
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-vintage-gold group-hover:translate-x-1 transition-all" />
+                    </Link>
                 </div>
             </div>
           </div>

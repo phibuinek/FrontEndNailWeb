@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, XCircle, AlertCircle } from 'lucide-react';
 import { loginRequest } from '@/store/slices/authSlice';
 
 export default function LoginPage() {
@@ -32,11 +32,6 @@ export default function LoginPage() {
       }
   }, [isAuthenticated, role, router]);
 
-  useEffect(() => {
-      if (error) {
-          alert(`Login failed: ${error}`);
-      }
-  }, [error]);
 
   return (
     <div className="min-h-screen bg-vintage-cream dark:bg-vintage-dark transition-colors duration-500 flex flex-col">
@@ -57,6 +52,14 @@ export default function LoginPage() {
                 Sign in to access your account
               </p>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
 
             <form className="space-y-6" onSubmit={handleLogin}>
               <div className="space-y-4">

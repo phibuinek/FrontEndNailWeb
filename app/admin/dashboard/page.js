@@ -58,7 +58,12 @@ const translations = {
       cancel: "Cancel"
     },
     pagination: {
-      page: "Page"
+      page: "Page",
+      showing: "Showing",
+      to: "to",
+      of: "of",
+      products: "products",
+      orders: "orders"
     },
     sort: {
         lastUpdated: "Newest Update",
@@ -130,7 +135,12 @@ const translations = {
       cancel: "Hủy"
     },
     pagination: {
-      page: "Trang"
+      page: "Trang",
+      showing: "Hiển thị",
+      to: "đến",
+      of: "trong tổng số",
+      products: "sản phẩm",
+      orders: "đơn hàng"
     },
     sort: {
         lastUpdated: "Cập Nhật Gần Nhất",
@@ -490,6 +500,9 @@ function AdminDashboardContent() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const paginatedItems = currentItems.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(currentItems.length / itemsPerPage);
+  const totalItems = currentItems.length;
+  const startItem = totalItems > 0 ? indexOfFirstItem + 1 : 0;
+  const endItem = Math.min(indexOfLastItem, totalItems);
 
   // Helper function to update URL params
   const updateUrlParams = (updates) => {
@@ -779,9 +792,17 @@ function AdminDashboardContent() {
           )}
         </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mt-6">
+        {/* Pagination Info & Controls */}
+        {totalItems > 0 && (
+          <div className="mt-6">
+            {/* Item Count Info */}
+            <div className="text-center mb-4 text-sm text-gray-600 dark:text-gray-400">
+              {t.pagination.showing} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{startItem}</span> {t.pagination.to} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{endItem}</span> {t.pagination.of} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{totalItems}</span> {activeTab === 'products' ? t.pagination.products : t.pagination.orders}
+            </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
             <button 
               onClick={() => paginate(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
@@ -857,6 +878,8 @@ function AdminDashboardContent() {
               <span className="hidden sm:inline">{language === 'VI' ? 'Sau' : 'Next'}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
+          </div>
+            )}
           </div>
         )}
       </div>

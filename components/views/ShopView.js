@@ -23,7 +23,11 @@ const translations = {
     prev: "Previous",
     next: "Next",
     page: "Page",
-    allCategories: "All Categories"
+    allCategories: "All Categories",
+    showing: "Showing",
+    to: "to",
+    of: "of",
+    products: "products"
   },
   VI: {
     title: "Tất Cả Sản Phẩm",
@@ -37,7 +41,11 @@ const translations = {
     prev: "Trước",
     next: "Sau",
     page: "Trang",
-    allCategories: "Tất Cả Danh Mục"
+    allCategories: "Tất Cả Danh Mục",
+    showing: "Hiển thị",
+    to: "đến",
+    of: "trong tổng số",
+    products: "sản phẩm"
   }
 };
 
@@ -139,6 +147,9 @@ export default function ShopView() {
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const displayedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalProducts = filteredProducts.length;
+  const startProduct = totalProducts > 0 ? startIndex + 1 : 0;
+  const endProduct = Math.min(startIndex + ITEMS_PER_PAGE, totalProducts);
 
   const updateUrl = (key, value) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -327,9 +338,17 @@ export default function ShopView() {
             )}
         </div>
         
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-2 sm:gap-3 pb-16">
+        {/* Pagination Info & Controls */}
+        {totalProducts > 0 && (
+          <div className="mt-12 pb-16">
+            {/* Product Count Info */}
+            <div className="text-center mb-4 text-sm text-gray-600 dark:text-gray-400">
+              {t.showing} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{startProduct}</span> {t.to} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{endProduct}</span> {t.of} <span className="font-semibold text-vintage-dark dark:text-vintage-cream">{totalProducts}</span> {t.products}
+            </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -405,6 +424,8 @@ export default function ShopView() {
               <span className="hidden sm:inline">{t.next}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
+          </div>
+            )}
           </div>
         )}
       </div>
