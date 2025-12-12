@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
-import { Trash2, Plus, Minus, Lock } from 'lucide-react';
+import { Trash2, Plus, Minus, Lock, ShoppingBag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -74,9 +74,15 @@ export default function CartView() {
           <h1 className="text-3xl font-serif font-bold text-vintage-dark dark:text-vintage-gold mb-8 transition-colors duration-500">{t.title}</h1>
           
           {cart.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm transition-colors duration-500">
-              <p className="text-gray-600 dark:text-gray-400 mb-6 transition-colors duration-500">{t.empty}</p>
-              <Button variant="outline" onClick={() => window.location.href = '/shop'}>{t.continue}</Button>
+            <div className="text-center py-16 bg-white dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm rounded-xl transition-colors duration-500">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-vintage-gold/10 rounded-full mb-6">
+                <ShoppingBag className="w-10 h-10 text-vintage-gold/50" />
+              </div>
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-2 transition-colors duration-500 font-medium">{t.empty}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">{language === 'VI' ? 'Hãy thêm sản phẩm vào giỏ hàng của bạn' : 'Add items to your cart to get started'}</p>
+              <Button variant="outline" onClick={() => router.push('/shop')} className="px-8">
+                {t.continue}
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -100,7 +106,7 @@ export default function CartView() {
                             
                             <div className="flex-grow text-center sm:text-left">
                               <h3 className="text-lg font-serif font-medium text-vintage-dark dark:text-vintage-cream">
-                                <a href={`/product/${item.id}`}>{name}</a>
+                                <a href={`/product/${item.id}`} className="cursor-pointer hover:text-vintage-gold transition-colors">{name}</a>
                               </h3>
                               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{category}</p>
                               <p className="text-sm font-medium text-vintage-gold mt-2 sm:hidden">${item.price}</p>
@@ -110,7 +116,7 @@ export default function CartView() {
                                <div className="flex items-center border border-vintage-border rounded-sm">
                                  <button 
                                     onClick={() => updateQuantity(item.id, -1)}
-                                    className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors"
+                                    className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                                     disabled={item.quantity <= 1}
                                  >
                                    <Minus className="w-3 h-3 text-vintage-dark dark:text-vintage-cream" />
@@ -118,7 +124,7 @@ export default function CartView() {
                                  <span className="w-8 text-center text-sm font-medium text-vintage-dark dark:text-vintage-cream">{item.quantity}</span>
                                  <button 
                                     onClick={() => updateQuantity(item.id, 1)}
-                                    className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors"
+                                    className="p-2 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors cursor-pointer"
                                  >
                                    <Plus className="w-3 h-3 text-vintage-dark dark:text-vintage-cream" />
                                  </button>
@@ -130,7 +136,7 @@ export default function CartView() {
 
                                <button 
                                  onClick={() => removeFromCart(item.id)}
-                                 className="text-gray-400 hover:text-vintage-rose transition-colors"
+                                 className="text-gray-400 hover:text-vintage-rose transition-colors cursor-pointer"
                                >
                                  <Trash2 className="w-5 h-5" />
                                </button>

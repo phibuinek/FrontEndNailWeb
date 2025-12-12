@@ -597,7 +597,7 @@ function AdminDashboardContent() {
         <div className="flex space-x-4 mb-6 border-b border-gray-200">
             <button
                 onClick={() => { setActiveTab('products'); resetPage(); }}
-                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
+                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors cursor-pointer ${
                     activeTab === 'products' 
                     ? 'border-b-2 border-vintage-gold text-vintage-gold' 
                     : 'text-gray-500 hover:text-vintage-dark'
@@ -608,7 +608,7 @@ function AdminDashboardContent() {
             </button>
             <button
                 onClick={() => { setActiveTab('orders'); resetPage(); }}
-                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors ${
+                className={`pb-3 px-1 flex items-center gap-2 font-medium transition-colors cursor-pointer ${
                     activeTab === 'orders' 
                     ? 'border-b-2 border-vintage-gold text-vintage-gold' 
                     : 'text-gray-500 hover:text-vintage-dark'
@@ -895,7 +895,7 @@ function AdminDashboardContent() {
               <h2 className="text-xl font-serif font-bold text-vintage-dark">
                 {currentProduct.id ? t.editProduct : t.addNewProduct}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -1020,14 +1020,14 @@ function AdminDashboardContent() {
                                 <button 
                                     type="button"
                                     onClick={() => setMainImage(img)}
-                                    className={`px-2 py-1 text-xs rounded bg-white hover:bg-gray-100 ${currentProduct.image === img ? 'text-vintage-gold font-bold' : 'text-gray-700'}`}
+                                    className={`px-2 py-1 text-xs rounded bg-white hover:bg-gray-100 cursor-pointer ${currentProduct.image === img ? 'text-vintage-gold font-bold' : 'text-gray-700'}`}
                                 >
                                     {currentProduct.image === img ? 'Main' : 'Set Main'}
                                 </button>
                                 <button 
                                     type="button"
                                     onClick={() => removeImage(idx)}
-                                    className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
+                                    className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>

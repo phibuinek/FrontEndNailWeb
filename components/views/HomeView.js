@@ -26,6 +26,7 @@ const translations = {
     heroTitle2: "Modern Artistry",
     heroText: "Discover our curated collection of premium nail supplies. From classic polishes to professional tools, we bring the vintage aesthetic to your salon.",
     shopCollection: "Shop Collection",
+    learnMore: "Learn More",
     featuredCollections: "Featured Collections",
     newArrivals: "New Arrivals",
     seeAll: "See All"
@@ -40,6 +41,7 @@ const translations = {
     heroTitle2: "Nghệ Thuật Hiện Đại",
     heroText: "Khám phá bộ sưu tập dụng cụ làm móng cao cấp của chúng tôi. Từ sơn móng cổ điển đến dụng cụ chuyên nghiệp, chúng tôi mang thẩm mỹ vintage đến salon của bạn.",
     shopCollection: "Mua Sắm Ngay",
+    learnMore: "Tìm Hiểu Thêm",
     featuredCollections: "Bộ Sưu Tập Nổi Bật",
     newArrivals: "Hàng Mới Về",
     seeAll: "Xem Tất Cả"
@@ -96,7 +98,8 @@ export default function HomeView() {
           title1: t.heroTitle1,
           title2: t.heroTitle2,
           description: t.heroText,
-          button1: t.shopCollection
+          button1: t.shopCollection,
+          button2: t.learnMore
         }} />
         
         {/* Features Section (Why Choose Us) */}

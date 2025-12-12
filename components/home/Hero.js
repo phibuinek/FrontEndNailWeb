@@ -24,7 +24,8 @@ export default function Hero({ texts }) {
     title1: "Timeless Beauty for",
     title2: "Modern Artistry",
     description: "Discover our curated collection of premium nail supplies. From classic polishes to professional tools, we bring the vintage aesthetic to your salon.",
-    button1: "Shop Collection"
+    button1: "Shop Collection",
+    button2: "Learn More"
   };
 
   return (
@@ -58,7 +59,7 @@ export default function Hero({ texts }) {
                         size="xl"
                         className="w-full sm:w-auto px-8 py-4 border-vintage-gold text-vintage-gold hover:bg-vintage-gold/10 text-lg font-medium tracking-wide"
                    >
-                       Learn More
+                       {t.button2}
                    </Button>
                 </div>
               </div>

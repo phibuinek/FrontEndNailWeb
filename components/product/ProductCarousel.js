@@ -176,7 +176,7 @@ export default function ProductCarousel({ products, title, loading = false }) {
               </button>
               <button
                 onClick={goToNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-8 sm:translate-x-12 md:translate-x-16 z-10 bg-white/95 dark:bg-vintage-dark/95 backdrop-blur-md rounded-full p-3 sm:p-4 shadow-xl hover:bg-vintage-gold hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 group border border-vintage-border/50"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-8 sm:translate-x-12 md:translate-x-16 z-10 bg-white/95 dark:bg-vintage-dark/95 backdrop-blur-md rounded-full p-3 sm:p-4 shadow-xl hover:bg-vintage-gold hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 group border border-vintage-border/50 cursor-pointer"
                 aria-label="Next"
               >
                 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-vintage-dark dark:text-vintage-cream group-hover:text-white transition-colors" />
@@ -191,7 +191,7 @@ export default function ProductCarousel({ products, title, loading = false }) {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                     index === currentIndex
                       ? 'w-8 bg-vintage-gold'
                       : 'w-2 bg-gray-300 dark:bg-gray-600 hover:bg-vintage-gold/50'

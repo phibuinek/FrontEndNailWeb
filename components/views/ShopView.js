@@ -205,12 +205,12 @@ export default function ShopView() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-center">
               <div className="space-y-4 sm:space-y-6">
-                <p className="uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[10px] sm:text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">Curated atelier</p>
+                <p className="uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[10px] sm:text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">{language === 'VI' ? 'Tuyển chọn chuyên nghiệp' : 'Curated selection'}</p>
                 <h1 className="relative text-2xl sm:text-[2.4rem] md:text-[3.2rem] lg:text-[3.7rem] font-serif text-vintage-dark dark:text-vintage-cream leading-tight tracking-tight">
                   <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/70 dark:bg-black/30 text-[0.75rem] sm:text-[0.9rem] uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gray-500 mb-3 sm:mb-4 border border-vintage-border/50 dark:border-white/10 rounded-full">
                     {language === 'VI' ? 'Tuyển chọn thủ công' : 'Curated selection'}
                   </span>
-                  <span className="block font-light">{searchQuery ? `"${searchQuery}"` : 'Vintage Atelier'}</span>
+                  <span className="block font-light">{searchQuery ? `"${searchQuery}"` : (language === 'VI' ? 'Pham\'s Nail Supply' : 'Pham\'s Nail Supply')}</span>
                   <span className="text-vintage-gold block font-normal text-xl sm:text-[2.2rem] md:text-[2.6rem] leading-tight mt-2 italic">
                     {language === 'VI' ? 'Bộ sưu tập thủ công' : 'Handcrafted collections'}
                   </span>
@@ -239,7 +239,7 @@ export default function ShopView() {
                         setSelectedCategory(collection.key);
                         updateUrl('category', collection.key);
                       }}
-                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${collection.color} border border-white/70 shadow-lg text-left transition-transform hover:-translate-y-1`}
+                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${collection.color} border border-white/70 shadow-lg text-left transition-transform hover:-translate-y-1 cursor-pointer`}
                     >
                       <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gray-500 font-semibold">Edition</p>
                       <p className="text-sm sm:text-lg font-serif font-bold text-vintage-dark mt-1 sm:mt-0">{collection.label}</p>
@@ -333,7 +333,7 @@ export default function ShopView() {
                         setSortBy('newest');
                         setSearchQuery('');
                         router.push('/shop');
-                    }} className="mt-2 text-sm text-vintage-gold hover:underline">Clear Filters & Search</button>
+                    }} className="mt-2 text-sm text-vintage-gold hover:underline cursor-pointer">Clear Filters & Search</button>
                 </div>
             )}
         </div>

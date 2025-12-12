@@ -67,7 +67,7 @@ const CollapsibleSection = ({ title, children }) => {
     <div className="border-t border-vintage-border dark:border-vintage-border/20">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full py-4 text-left"
+        className="flex items-center justify-between w-full py-4 text-left cursor-pointer"
       >
         <span className="font-medium text-vintage-dark dark:text-vintage-cream">{title}</span>
         {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -103,6 +103,9 @@ export default function ProductDetailView({ id }) {
   
   // Purchase Quantity State
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
+  
+  // Description Expand/Collapse State
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const handleMouseMove = (e) => {
       if (!showZoom) return;
@@ -229,7 +232,7 @@ export default function ProductDetailView({ id }) {
                          <button 
                             key={idx}
                             onClick={() => setActiveImage(img)}
-                            className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${activeImage === img ? 'border-vintage-gold ring-1 ring-vintage-gold' : 'border-gray-200 hover:border-vintage-gold/50'}`}
+                            className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all cursor-pointer ${activeImage === img ? 'border-vintage-gold ring-1 ring-vintage-gold' : 'border-gray-200 hover:border-vintage-gold/50'}`}
                          >
                              <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
                          </button>
@@ -261,13 +264,10 @@ export default function ProductDetailView({ id }) {
                         <div 
                             className="absolute pointer-events-none border border-vintage-gold/50 bg-vintage-gold/10 hidden md:block z-30"
                             style={{
-                                left: Math.max(0, Math.min(mousePosition.x - 75, typeof window !== 'undefined' ? window.innerWidth : 1000)), // Simple clamping, usually container width needed
-                                top: Math.max(0, Math.min(mousePosition.y - 75, typeof window !== 'undefined' ? window.innerHeight : 1000)),
+                                left: `${Math.max(0, Math.min(mousePosition.x - 75, 500))}px`,
+                                top: `${Math.max(0, Math.min(mousePosition.y - 75, 500))}px`,
                                 width: '150px',
                                 height: '150px',
-                                transform: 'translate(0, 0)', // We handle positioning manually for smoother sync
-                                left: `${mousePosition.x - 75}px`,
-                                top: `${mousePosition.y - 75}px`,
                             }}
                         />
                     )}
@@ -355,15 +355,103 @@ export default function ProductDetailView({ id }) {
                 {t.description}
               </h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line space-y-4">
-                  {description ? (
-                    <p className="text-base md:text-lg">{description}</p>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400 italic">
-                      {language === 'VI' ? 'Chưa có mô tả sản phẩm' : 'No product description available'}
-                    </p>
-                  )}
-                </div>
+                {description ? (
+                  <div className="relative">
+                    <div className={`text-gray-700 dark:text-gray-300 leading-relaxed space-y-4 ${!isDescriptionExpanded && description.length > 500 ? 'max-h-96 overflow-hidden' : ''}`}>
+                      {(() => {
+                        // Parse description: split by double line breaks or bold markers, but preserve line breaks within paragraphs
+                        const parseDescription = (text) => {
+                          if (!text) return [];
+                          
+                          // Split by double line breaks first (these create new paragraphs)
+                          let paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+                          
+                          // If no double breaks, try single breaks
+                          if (paragraphs.length === 1) {
+                            paragraphs = text.split(/\n/).filter(p => p.trim());
+                          }
+                          
+                          // Process each paragraph
+                          return paragraphs.map((para, idx) => {
+                            const trimmed = para.trim();
+                            
+                            // Check if it's a heading (starts with ** and ends with **)
+                            const headingMatch = trimmed.match(/^\*\*(.+?)\*\*$/);
+                            if (headingMatch) {
+                              return { type: 'heading', content: headingMatch[1], key: idx };
+                            }
+                            
+                            // Check if it starts with ** (bold at start)
+                            const boldStartMatch = trimmed.match(/^\*\*(.+?)\*\*(.+)$/s);
+                            if (boldStartMatch) {
+                              // Preserve line breaks in content
+                              const content = boldStartMatch[2].trim();
+                              return { 
+                                type: 'paragraph', 
+                                bold: boldStartMatch[1], 
+                                content: content,
+                                key: idx 
+                              };
+                            }
+                            
+                            // Regular paragraph - preserve line breaks
+                            return { type: 'paragraph', content: trimmed, key: idx };
+                          });
+                        };
+                        
+                        const parsed = parseDescription(description);
+                        
+                        return parsed.map((item) => {
+                          if (item.type === 'heading') {
+                            return (
+                              <h3 key={item.key} className="text-lg font-semibold text-vintage-dark dark:text-vintage-cream mt-6 mb-3 first:mt-0">
+                                {item.content}
+                              </h3>
+                            );
+                          }
+                          
+                          if (item.bold) {
+                            return (
+                              <p key={item.key} className="text-base md:text-lg whitespace-pre-line">
+                                <strong className="text-vintage-dark dark:text-vintage-cream font-semibold">{item.bold}:</strong>{' '}
+                                <span>{item.content}</span>
+                              </p>
+                            );
+                          }
+                          
+                          return (
+                            <p key={item.key} className="text-base md:text-lg whitespace-pre-line">
+                              {item.content}
+                            </p>
+                          );
+                        });
+                      })()}
+                    </div>
+                    
+                    {/* Gradient fade for long descriptions */}
+                    {!isDescriptionExpanded && description.length > 500 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-vintage-cream dark:from-vintage-dark to-transparent pointer-events-none"></div>
+                    )}
+                    
+                    {/* Read More/Less Button */}
+                    {description.length > 500 && (
+                      <button
+                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        className="mt-4 text-vintage-gold hover:text-vintage-gold-hover font-medium text-sm flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        {isDescriptionExpanded 
+                          ? (language === 'VI' ? 'Thu gọn' : 'Show Less')
+                          : (language === 'VI' ? 'Đọc thêm' : 'Read More')
+                        }
+                        <ChevronDown className={`w-4 h-4 transition-transform ${isDescriptionExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 italic">
+                    {language === 'VI' ? 'Chưa có mô tả sản phẩm' : 'No product description available'}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -380,7 +468,7 @@ export default function ProductDetailView({ id }) {
                         <button
                           onClick={() => setPurchaseQuantity((prev) => Math.max(1, prev - 1))}
                           disabled={purchaseQuantity <= 1 || isOutOfStock}
-                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Minus className="w-4 h-4 text-vintage-dark dark:text-vintage-cream" />
                         </button>
@@ -400,7 +488,7 @@ export default function ProductDetailView({ id }) {
                         <button
                           onClick={() => setPurchaseQuantity((prev) => Math.min(stockQuantity, prev + 1))}
                           disabled={purchaseQuantity >= stockQuantity || isOutOfStock}
-                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="p-3 hover:bg-vintage-paper dark:hover:bg-vintage-border/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="w-4 h-4 text-vintage-dark dark:text-vintage-cream" />
                         </button>
@@ -491,10 +579,10 @@ export default function ProductDetailView({ id }) {
               {/* Policies */}
               <div className="space-y-1">
                   <CollapsibleSection title={t.refundPolicy}>
-                      <Link href="/refund" className="underline hover:text-vintage-gold">Read our full refund policy here.</Link>
+                      <Link href="/refund" className="underline hover:text-vintage-gold cursor-pointer">Read our full refund policy here.</Link>
                   </CollapsibleSection>
                   <CollapsibleSection title={t.shippingPolicy}>
-                      <Link href="/shipping" className="underline hover:text-vintage-gold">Read our shipping policy here.</Link>
+                      <Link href="/shipping" className="underline hover:text-vintage-gold cursor-pointer">Read our shipping policy here.</Link>
                   </CollapsibleSection>
               </div>
 

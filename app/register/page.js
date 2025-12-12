@@ -141,7 +141,7 @@ export default function RegisterPage() {
               </div>
 
               <p className="mt-4 text-center text-sm">
-                <a href="/login" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors">
+                <a href="/login" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors cursor-pointer">
                   Sign in instead
                 </a>
               </p>

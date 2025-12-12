@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '../ui/Button';
-import { Star, Package, Feather } from 'lucide-react';
+import { Star, Package, Feather, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/formatPrice';
@@ -94,13 +94,13 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-gray-400">
           <span className="truncate pr-2">{categoryLabel}</span>
           <span className="flex items-center gap-1 text-vintage-gold flex-shrink-0">
-            <Feather className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> <span className="hidden sm:inline">Atelier</span>
+            <Feather className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> <span className="hidden sm:inline">Premium</span>
           </span>
         </div>
 
         <div className="space-y-1.5 sm:space-y-2 flex-1">
           <h3 className="text-sm sm:text-base font-serif font-semibold text-vintage-dark dark:text-vintage-cream line-clamp-2 sm:line-clamp-2 md:line-clamp-3">
-            <Link href={`/product/${product.id}`}>
+            <Link href={`/product/${product.id}`} className="cursor-pointer">
               <span aria-hidden="true" className="absolute inset-0" />
               {name}
             </Link>
@@ -119,28 +119,35 @@ export default function ProductCard({ product }) {
             </p>
           </div>
 
-          <div className="flex justify-between items-end gap-2">
-            <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex flex-col gap-2 sm:gap-2.5">
+            <div className="flex flex-col min-w-0">
                 {discount > 0 && (
                     <span className="text-[10px] sm:text-xs text-gray-500 line-through mb-0.5">
                         {formatPrice(product.price, language)}
                     </span>
                 )}
-                <p className={`text-base sm:text-lg font-medium truncate ${discount > 0 ? 'text-red-600' : 'text-vintage-dark dark:text-vintage-cream'}`}>
+                <p className={`text-base sm:text-lg font-medium ${discount > 0 ? 'text-red-600' : 'text-vintage-dark dark:text-vintage-cream'}`}>
                     {formatPrice(discountedPrice, language)}
                 </p>
             </div>
             
             {!isAdmin && (
-                <Button 
-                  size="sm"   
-                  variant="outline" 
-                  className="z-10 relative disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-vintage-gold group-hover:text-white transition-all text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 flex-shrink-0 whitespace-nowrap"
+                <button
                   disabled={isOutOfStock}
                   onClick={() => addToCart({ ...product, price: discountedPrice })}
+                  className="w-full z-10 relative disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300 ease-out group/btn overflow-hidden"
                 >
-                  {isOutOfStock ? t.soldOut : t.add}
-                </Button>
+                  <div className="relative w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-vintage-gold to-[#C5A059] hover:from-vintage-gold-hover hover:to-[#A88455] text-white rounded-lg border border-vintage-gold/30 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-300">
+                    <div className="flex items-center justify-center gap-2">
+                      <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/btn:scale-110" />
+                      <span className="text-[11px] sm:text-xs font-serif font-medium tracking-wide uppercase">
+                        {isOutOfStock ? t.soldOut : t.add}
+                      </span>
+                    </div>
+                    {/* Shine effect on hover */}
+                    <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  </div>
+                </button>
             )}
           </div>
         </div>

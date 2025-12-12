@@ -79,9 +79,6 @@ export default function FeaturedCategories({ language = 'EN' }) {
               {/* Gradient Overlay for readability - Reduced opacity for clearer image */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-60 group-hover:opacity-50 transition-opacity duration-300" />
 
-              {/* Vintage Noise Texture Overlay - Reduced for clarity */}
-              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none" />
-
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                 <h3 className="text-2xl font-serif font-bold text-vintage-cream mb-3 drop-shadow-md">{cat.name}</h3>

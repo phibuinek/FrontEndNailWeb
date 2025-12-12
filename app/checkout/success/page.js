@@ -302,14 +302,14 @@ function CheckoutSuccessContent() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/shop"
-              className="group flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-vintage-gold to-vintage-gold-hover text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold text-base relative overflow-hidden"
+              className="group flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-vintage-gold to-vintage-gold-hover text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold text-base relative overflow-hidden cursor-pointer"
             >
               <span className="relative z-10">{t.continueShopping}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-vintage-gold-hover to-vintage-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </Link>
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-white/80 dark:bg-vintage-dark/70 backdrop-blur-sm text-vintage-dark dark:text-vintage-cream border-2 border-vintage-border rounded-xl hover:border-vintage-gold hover:bg-white dark:hover:bg-vintage-dark transition-all duration-300 font-semibold text-base hover:shadow-lg"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-white/80 dark:bg-vintage-dark/70 backdrop-blur-sm text-vintage-dark dark:text-vintage-cream border-2 border-vintage-border rounded-xl hover:border-vintage-gold hover:bg-white dark:hover:bg-vintage-dark transition-all duration-300 font-semibold text-base hover:shadow-lg cursor-pointer"
             >
               <Home className="w-5 h-5" />
               {t.backToHome}

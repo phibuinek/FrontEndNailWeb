@@ -114,7 +114,7 @@ export default function LoginPage() {
                     type="checkbox"
                     className="h-4 w-4 text-vintage-gold focus:ring-vintage-gold border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-gray-600 dark:text-gray-400">
+                  <label htmlFor="remember-me" className="ml-2 block text-gray-600 dark:text-gray-400 cursor-pointer">
                     Remember me
                   </label>
                 </div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
               <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{' '}
-                <a href="/register" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors">
+                <a href="/register" className="font-medium text-vintage-gold hover:text-vintage-gold-hover transition-colors cursor-pointer">
                   Sign up
                 </a>
               </p>

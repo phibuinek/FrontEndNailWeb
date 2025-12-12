@@ -155,23 +155,23 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="font-serif text-3xl font-bold text-vintage-brown dark:text-vintage-gold tracking-tighter transition-colors duration-500">
+            <Link href="/" className="font-serif text-3xl font-bold text-vintage-brown dark:text-vintage-gold tracking-tighter transition-colors duration-500 cursor-pointer">
               Pham's nail supplies
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className={`hidden md:flex items-center space-x-8 transition-opacity duration-300 ${isFadingLang ? 'opacity-50' : 'opacity-100'}`}>
-            <Link href="/" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium">
+            <Link href="/" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium cursor-pointer">
               {t.home}
             </Link>
-            <Link href="/shop" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium">
+            <Link href="/shop" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium cursor-pointer">
               {t.shop}
             </Link>
-            <Link href="/about" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium">
+            <Link href="/about" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium cursor-pointer">
               {t.about}
             </Link>
-            <Link href="/contact" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium">
+            <Link href="/contact" className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold dark:hover:text-vintage-gold transition-colors duration-300 font-medium cursor-pointer">
               {t.contact}
             </Link>
           </div>
@@ -286,7 +286,7 @@ export default function Navbar() {
                       
                       <Link 
                         href="/profile" 
-                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2"
+                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2 cursor-pointer"
                       >
                           <User className="w-4 h-4" />
                           {t.profile}
@@ -294,7 +294,7 @@ export default function Navbar() {
 
                       <Link 
                         href="/profile/change-password" 
-                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2"
+                        className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2 cursor-pointer"
                       >
                           <Lock className="w-4 h-4" />
                           {t.changePassword}
@@ -303,7 +303,7 @@ export default function Navbar() {
                       {isAdmin && (
                           <Link 
                             href="/admin/dashboard" 
-                            className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2"
+                            className="block px-4 py-2 text-sm text-vintage-dark dark:text-vintage-cream hover:bg-vintage-paper dark:hover:bg-vintage-border/20 flex items-center gap-2 cursor-pointer"
                           >
                               <LayoutDashboard className="w-4 h-4" />
                               {t.dashboard}
@@ -362,7 +362,7 @@ export default function Navbar() {
             
             <button 
               onClick={handleLanguageToggle}
-              className="w-full text-left block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2"
+              className="w-full text-left block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2 cursor-pointer"
             >
               <Globe className={`w-4 h-4 transition-transform duration-500 ${isSwitching ? 'rotate-180' : ''}`} />
               <span>Switch to {langState === 'EN' ? 'Vietnamese' : 'English'}</span>
@@ -373,16 +373,16 @@ export default function Navbar() {
                 <div className="border-t border-vintage-border/30 pt-2 mt-2">
                     <div className="px-3 py-2 text-xs text-gray-500">{t.welcome} {username}</div>
                     
-                    <Link href="/profile" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
+                    <Link href="/profile" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2 cursor-pointer">
                          <User className="w-4 h-4" /> {t.profile}
                     </Link>
 
-                    <Link href="/profile/change-password" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
+                    <Link href="/profile/change-password" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2 cursor-pointer">
                          <Lock className="w-4 h-4" /> {t.changePassword}
                     </Link>
 
                     {isAdmin && (
-                        <Link href="/admin/dashboard" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2">
+                        <Link href="/admin/dashboard" className="block px-3 py-2 text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold font-medium flex items-center gap-2 cursor-pointer">
                              <LayoutDashboard className="w-4 h-4" /> {t.dashboard}
                         </Link>
                     )}
