@@ -207,21 +207,18 @@ export default function ShopView() {
               <div className="space-y-4 sm:space-y-6">
                 <p className="uppercase tracking-[0.4em] sm:tracking-[0.6em] text-[10px] sm:text-[11px] text-vintage-gold/80 dark:text-vintage-gold/80 font-medium">{language === 'VI' ? 'Tuyển chọn chuyên nghiệp' : 'Curated selection'}</p>
                 <h1 className="relative text-2xl sm:text-[2.4rem] md:text-[3.2rem] lg:text-[3.7rem] font-serif text-vintage-dark dark:text-vintage-cream leading-tight tracking-tight">
-                  <span className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/70 dark:bg-black/30 text-[0.75rem] sm:text-[0.9rem] uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gray-500 mb-3 sm:mb-4 border border-vintage-border/50 dark:border-white/10 rounded-full">
-                    {language === 'VI' ? 'Tuyển chọn thủ công' : 'Curated selection'}
-                  </span>
                   <span className="block font-light">{searchQuery ? `"${searchQuery}"` : (language === 'VI' ? 'Pham\'s Nail Supply' : 'Pham\'s Nail Supply')}</span>
                   <span className="text-vintage-gold block font-normal text-xl sm:text-[2.2rem] md:text-[2.6rem] leading-tight mt-2 italic">
                     {language === 'VI' ? 'Bộ sưu tập thủ công' : 'Handcrafted collections'}
                   </span>
                   <span className="absolute -left-4 sm:-left-6 top-4 sm:top-6 w-12 h-12 sm:w-16 sm:h-16 border border-vintage-gold/60 rounded-full opacity-30 pointer-events-none" />
                 </h1>
-                <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-xl font-light leading-relaxed bg-white/60 dark:bg-black/20 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-vintage-border/30 dark:border-white/10">
+                <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-xl font-light leading-relaxed bg-vintage-cream/60 dark:bg-black/20 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-vintage-border/30 dark:border-white/10">
                   {t.description} {language === 'VI' ? 'Mỗi món mang dấu ấn cổ điển và sự tinh xảo của nghệ nhân.' : 'Each piece carries a nostalgic charm and artisan craftsmanship.'}
                 </p>
                 <div className="flex flex-wrap gap-2 sm:gap-4">
                   {highlightStats.map((stat) => (
-                    <div key={stat.label} className="flex flex-col bg-white/80 dark:bg-vintage-dark/50 border border-vintage-border/40 dark:border-vintage-border/20 rounded-lg px-3 py-2 sm:px-4 sm:py-3 min-w-[100px] sm:min-w-[130px] shadow-sm">
+                    <div key={stat.label} className="flex flex-col bg-vintage-cream/80 dark:bg-vintage-dark/50 border border-vintage-border/40 dark:border-vintage-border/20 rounded-lg px-3 py-2 sm:px-4 sm:py-3 min-w-[100px] sm:min-w-[130px] shadow-sm">
                       <span className="text-xl sm:text-2xl font-serif text-vintage-gold">{stat.value}</span>
                       <span className="text-xs sm:text-sm font-medium text-vintage-dark dark:text-vintage-cream">{stat.label}</span>
                       <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{stat.detail}</span>
@@ -260,7 +257,7 @@ export default function ShopView() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
         {/* Filters and Sort Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-white dark:bg-vintage-dark/40 p-3 sm:p-4 rounded-lg border border-vintage-border dark:border-vintage-border/20 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-vintage-paper dark:bg-vintage-dark/40 p-3 sm:p-4 rounded-lg border border-vintage-border dark:border-vintage-border/20 shadow-sm">
             
             {/* Search Filter */}
             <div className="flex items-center gap-2 w-full md:w-auto flex-grow md:mr-4 order-1">
@@ -295,9 +292,9 @@ export default function ShopView() {
                     onChange={handleCategoryChange}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-xs sm:text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
-                    <option value="All" className="bg-white dark:bg-vintage-dark">{t.allCategories}</option>
+                    <option value="All" className="bg-vintage-cream dark:bg-vintage-dark">{t.allCategories}</option>
                     {categories.map(cat => (
-                        <option key={cat.key} value={cat.key} className="bg-white dark:bg-vintage-dark">{cat.label}</option>
+                        <option key={cat.key} value={cat.key} className="bg-vintage-cream dark:bg-vintage-dark">{cat.label}</option>
                     ))}
                 </select>
             </div>
@@ -311,10 +308,10 @@ export default function ShopView() {
                     onChange={handleSortChange}
                     className="bg-transparent border-b border-vintage-border focus:border-vintage-gold outline-none text-vintage-dark dark:text-vintage-cream text-xs sm:text-sm py-1 px-2 w-full md:w-48 transition-colors cursor-pointer"
                 >
-                    <option value="newest" className="bg-white dark:bg-vintage-dark">{t.sortNewest}</option>
-                    <option value="bestSellers" className="bg-white dark:bg-vintage-dark">{t.sortBestSellers}</option>
-                    <option value="priceAsc" className="bg-white dark:bg-vintage-dark">{t.sortPriceLow}</option>
-                    <option value="priceDesc" className="bg-white dark:bg-vintage-dark">{t.sortPriceHigh}</option>
+                    <option value="newest" className="bg-vintage-cream dark:bg-vintage-dark">{t.sortNewest}</option>
+                    <option value="bestSellers" className="bg-vintage-cream dark:bg-vintage-dark">{t.sortBestSellers}</option>
+                    <option value="priceAsc" className="bg-vintage-cream dark:bg-vintage-dark">{t.sortPriceLow}</option>
+                    <option value="priceDesc" className="bg-vintage-cream dark:bg-vintage-dark">{t.sortPriceHigh}</option>
                 </select>
             </div>
         </div>

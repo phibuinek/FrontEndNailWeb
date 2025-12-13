@@ -74,7 +74,7 @@ export default function CartView() {
           <h1 className="text-3xl font-serif font-bold text-vintage-dark dark:text-vintage-gold mb-8 transition-colors duration-500">{t.title}</h1>
           
           {cart.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm rounded-xl transition-colors duration-500">
+            <div className="text-center py-16 bg-vintage-cream dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm rounded-xl transition-colors duration-500">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-vintage-gold/10 rounded-full mb-6">
                 <ShoppingBag className="w-10 h-10 text-vintage-gold/50" />
               </div>
@@ -88,7 +88,7 @@ export default function CartView() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                {/* Cart Items */}
                <div className="lg:col-span-8">
-                  <div className="bg-white dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm overflow-hidden">
+                  <div className="bg-vintage-cream dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm overflow-hidden">
                     <ul className="divide-y divide-vintage-border dark:divide-vintage-border/20">
                       {cart.map((item) => {
                         const name = typeof item.name === 'object' ? item.name[langKey] : item.name;
@@ -150,7 +150,7 @@ export default function CartView() {
 
                {/* Order Summary */}
                <div className="lg:col-span-4">
-                  <div className="bg-white dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm p-6">
+                  <div className="bg-vintage-cream dark:bg-vintage-dark/50 border border-vintage-border dark:border-vintage-border/20 shadow-sm p-6">
                     <h2 className="text-lg font-serif font-bold text-vintage-dark dark:text-vintage-cream mb-6">{t.total}</h2>
                     
                     <div className="flex justify-between items-center mb-4 text-sm">

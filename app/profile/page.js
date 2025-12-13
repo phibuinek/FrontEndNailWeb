@@ -37,7 +37,8 @@ const translations = {
         completed: "Completed",
         cancelled: "Cancelled"
     },
-    changePassword: "Change Password"
+    changePassword: "Change Password",
+    changePasswordDesc: "Update your account password"
   },
   VI: {
     title: "Hồ Sơ Của Tôi",
@@ -66,7 +67,8 @@ const translations = {
         completed: "Hoàn Thành",
         cancelled: "Đã Hủy"
     },
-    changePassword: "Đổi Mật Khẩu"
+    changePassword: "Đổi Mật Khẩu",
+    changePasswordDesc: "Cập nhật mật khẩu tài khoản của bạn"
   }
 };
 
@@ -179,7 +181,7 @@ export default function ProfilePage() {
                                     {t.changePassword}
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Update your account password
+                                    {t.changePasswordDesc}
                                 </p>
                             </div>
                         </div>

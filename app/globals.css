@@ -31,6 +31,9 @@
   --font-sans: var(--font-lato);
 }
 
+/* Force Tailwind v4 to use class-based dark mode instead of media query */
+@variant dark (&:where(.dark, .dark *));
+
 /* Global Styles for Vintage Feel */
 html {
   /* Removed scroll-behavior: smooth because Lenis handles it */

@@ -12,7 +12,7 @@ import { logout } from '@/store/slices/authSlice';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
   const { cartCount } = useCart();
   const [mounted, setMounted] = useState(false);
@@ -90,6 +90,20 @@ export default function Navbar() {
             window.removeEventListener('auth-change', handleAuthChange);
         };
     }, [reduxUser, reduxRole]);
+
+    // Sync theme class with resolvedTheme
+    useEffect(() => {
+        if (!mounted) return;
+        
+        const htmlEl = document.documentElement;
+        const currentResolvedTheme = resolvedTheme || theme;
+        
+        if (currentResolvedTheme === 'dark') {
+            htmlEl.classList.add('dark');
+        } else {
+            htmlEl.classList.remove('dark');
+        }
+    }, [mounted, resolvedTheme, theme]);
 
     // Also update when Redux state changes
     useEffect(() => {
@@ -200,11 +214,39 @@ export default function Navbar() {
 
             {/* Theme Toggle */}
             <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 transform active:rotate-90 flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10"
+              onClick={() => {
+                if (!mounted) return;
+                try {
+                  // Use resolvedTheme to get the actual theme (handles 'system' case)
+                  const currentTheme = resolvedTheme || theme || 'light';
+                  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  
+                  // Force apply class to HTML element immediately
+                  const htmlEl = document.documentElement;
+                  if (newTheme === 'dark') {
+                    htmlEl.classList.add('dark');
+                  } else {
+                    htmlEl.classList.remove('dark');
+                  }
+                  
+                  // Update localStorage first
+                  try {
+                    localStorage.setItem('pham-nail-theme', newTheme);
+                  } catch (e) {
+                    console.warn('Could not save theme to localStorage:', e);
+                  }
+                  
+                  // Then update theme via next-themes
+                  setTheme(newTheme);
+                } catch (error) {
+                  console.error('Error toggling theme:', error);
+                }
+              }}
+              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-all duration-300 transform active:rotate-90 flex items-center justify-center h-10 w-10 rounded-full hover:bg-vintage-paper/50 dark:hover:bg-vintage-cream/10 cursor-pointer"
               aria-label="Toggle Dark Mode"
+              disabled={!mounted}
             >
-              {mounted && theme === 'dark' ? (
+              {mounted && (resolvedTheme === 'dark' || theme === 'dark') ? (
                 <Sun className="w-5 h-5" />
               ) : (
                 <Moon className="w-5 h-5" />
@@ -222,7 +264,7 @@ export default function Navbar() {
                 
                 {/* Search Dropdown Input */}
                 {isSearchOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md p-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-vintage-cream dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md p-2 z-50 animate-in fade-in slide-in-from-top-2">
                         <form onSubmit={handleSearchSubmit} className="flex items-center">
                             <input
                                 ref={searchInputRef}
@@ -275,7 +317,7 @@ export default function Navbar() {
               {/* Dropdown Menu */}
               {username && isUserMenuOpen && (
                   <div 
-                    className="absolute right-0 top-full mt-0 w-48 bg-white dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md overflow-hidden py-1 z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2"
+                    className="absolute right-0 top-full mt-0 w-48 bg-vintage-cream dark:bg-vintage-dark border border-vintage-border dark:border-vintage-border/20 shadow-lg rounded-md overflow-hidden py-1 z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2"
                     onMouseEnter={() => setIsUserMenuOpen(true)}
                     onMouseLeave={() => setIsUserMenuOpen(false)}
                   >
@@ -327,10 +369,39 @@ export default function Navbar() {
           <div className="md:hidden flex items-center space-x-4">
              {/* Mobile Theme Toggle */}
              <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300"
+              onClick={() => {
+                if (!mounted) return;
+                try {
+                  // Use resolvedTheme to get the actual theme (handles 'system' case)
+                  const currentTheme = resolvedTheme || theme || 'light';
+                  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  
+                  // Force apply class to HTML element immediately
+                  const htmlEl = document.documentElement;
+                  if (newTheme === 'dark') {
+                    htmlEl.classList.add('dark');
+                  } else {
+                    htmlEl.classList.remove('dark');
+                  }
+                  
+                  // Update localStorage first
+                  try {
+                    localStorage.setItem('pham-nail-theme', newTheme);
+                  } catch (e) {
+                    console.warn('Could not save theme to localStorage:', e);
+                  }
+                  
+                  // Then update theme via next-themes
+                  setTheme(newTheme);
+                } catch (error) {
+                  console.error('Error toggling theme:', error);
+                }
+              }}
+              className="text-vintage-dark dark:text-vintage-paper hover:text-vintage-gold transition-colors duration-300 cursor-pointer"
+              aria-label="Toggle Dark Mode"
+              disabled={!mounted}
             >
-              {mounted && theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {mounted && (resolvedTheme === 'dark' || theme === 'dark') ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
             <button

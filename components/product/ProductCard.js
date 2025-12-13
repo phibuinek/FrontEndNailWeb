@@ -51,7 +51,7 @@ export default function ProductCard({ product }) {
   const ratingValue = product.rating ?? 4.8;
 
   return (
-    <div className="group relative bg-white dark:bg-vintage-dark/70 border border-vintage-border/50 dark:border-vintage-border/10 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+    <div className="group relative bg-vintage-cream dark:bg-vintage-dark/70 border border-vintage-border/50 dark:border-vintage-border/10 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-vintage-gold/10 via-transparent to-pink-200/20 dark:from-vintage-gold/20" />
       <Link href={`/product/${product.id}`} className="block h-full w-full">
         <div className="aspect-square w-full overflow-hidden bg-vintage-paper/70 dark:bg-vintage-dark/40 relative">
@@ -154,7 +154,7 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* View details overlay on image */}
-      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex items-center gap-2 sm:gap-2.5 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none z-30 bg-white/90 dark:bg-vintage-dark/90 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg">
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex items-center gap-2 sm:gap-2.5 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none z-30 bg-vintage-cream/90 dark:bg-vintage-dark/90 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg">
         <span className="text-[10px] sm:text-xs font-serif font-medium text-vintage-dark dark:text-vintage-cream tracking-wide uppercase">
           {language === 'VI' ? 'Xem chi tiết' : 'View details'}
         </span>

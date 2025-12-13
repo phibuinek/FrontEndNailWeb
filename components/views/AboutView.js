@@ -8,7 +8,7 @@ const translations = {
   EN: {
     title: "Our Story",
     subtitle: "A Legacy of Beauty",
-    content1: "Founded with a passion for timeless elegance, Vintage Nail Supply was born from the desire to bring the sophisticated aesthetics of the past into the modern beauty world. We believe that tools are not just functional items, but extensions of the artist's hand.",
+    content1: "Founded with a passion for timeless elegance, Pham's Nail Supply was born from the desire to bring the sophisticated aesthetics of the past into the modern beauty world. We believe that tools are not just functional items, but extensions of the artist's hand.",
     content2: "Our collection is painstakingly curated from artisans around the globe who still practice traditional methods of craftsmanship. From hand-forged nippers to small-batch lacquers, every item in our store tells a story.",
     missionTitle: "Our Mission",
     missionText: "To empower nail professionals with tools that inspire creativity and evoke a sense of history and luxury in every service."
@@ -16,7 +16,7 @@ const translations = {
   VI: {
     title: "Câu Chuyện Của Chúng Tôi",
     subtitle: "Di Sản Của Vẻ Đẹp",
-    content1: "Được thành lập với niềm đam mê vẻ đẹp thanh lịch vượt thời gian, Vintage Nail Supply ra đời từ mong muốn mang thẩm mỹ tinh tế của quá khứ vào thế giới làm đẹp hiện đại. Chúng tôi tin rằng dụng cụ không chỉ là vật dụng chức năng, mà là sự nối dài của đôi tay người nghệ sĩ.",
+    content1: "Được thành lập với niềm đam mê vẻ đẹp thanh lịch vượt thời gian, Pham's Nail Supply ra đời từ mong muốn mang thẩm mỹ tinh tế của quá khứ vào thế giới làm đẹp hiện đại. Chúng tôi tin rằng dụng cụ không chỉ là vật dụng chức năng, mà là sự nối dài của đôi tay người nghệ sĩ.",
     content2: "Bộ sưu tập của chúng tôi được tuyển chọn kỹ lưỡng từ các nghệ nhân trên khắp thế giới, những người vẫn thực hành các phương pháp thủ công truyền thống. Từ kềm rèn tay đến sơn móng sản xuất lô nhỏ, mỗi món đồ trong cửa hàng của chúng tôi đều kể một câu chuyện.",
     missionTitle: "Sứ Mệnh",
     missionText: "Trao quyền cho các chuyên gia làm móng với những dụng cụ khơi gợi sự sáng tạo và mang lại cảm giác lịch sử và sang trọng trong mỗi dịch vụ."

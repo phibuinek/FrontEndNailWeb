@@ -242,7 +242,7 @@ export default function ProductDetailView({ id }) {
 
              {/* Main Image */}
              <div 
-                className="relative flex-grow aspect-square w-full rounded-lg bg-white border border-vintage-border dark:border-vintage-border/20 cursor-crosshair group z-20"
+                className="relative flex-grow aspect-square w-full rounded-lg bg-vintage-cream border border-vintage-border dark:border-vintage-border/20 cursor-crosshair group z-20"
                 onMouseEnter={() => setShowZoom(true)}
                 onMouseLeave={() => setShowZoom(false)}
                 onMouseMove={handleMouseMove}
@@ -275,7 +275,7 @@ export default function ProductDetailView({ id }) {
                     {/* Zoom Window (Flyout) */}
                     {showZoom && !isOutOfStock && (
                         <div 
-                            className="hidden md:block absolute z-50 overflow-hidden border-2 border-vintage-gold bg-white shadow-2xl rounded-md"
+                            className="hidden md:block absolute z-50 overflow-hidden border-2 border-vintage-gold bg-vintage-cream shadow-2xl rounded-md"
                             style={{
                                 left: '105%', 
                                 top: '0',
@@ -587,7 +587,7 @@ export default function ProductDetailView({ id }) {
               </div>
 
               {/* Payment & Security */}
-              <div className="border border-vintage-border dark:border-vintage-border/20 rounded-lg p-4 bg-white dark:bg-vintage-dark/30">
+              <div className="border border-vintage-border dark:border-vintage-border/20 rounded-lg p-4 bg-vintage-cream dark:bg-vintage-dark/30">
                   <div className="flex items-center justify-between mb-2">
                       <h3 className="font-medium text-vintage-dark dark:text-vintage-cream">{t.paymentSecurity}</h3>
                       <Lock className="w-4 h-4 text-gray-500" />
@@ -639,7 +639,7 @@ export default function ProductDetailView({ id }) {
         <div className="mt-16 border-t border-vintage-border dark:border-vintage-border/20 pt-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Product Details */}
-            <div className="bg-white dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
+            <div className="bg-vintage-cream dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
               <h3 className="text-xl font-serif font-semibold text-vintage-dark dark:text-vintage-cream mb-4">
                 {language === 'VI' ? 'Chi Tiết Sản Phẩm' : 'Product Details'}
               </h3>
@@ -683,7 +683,7 @@ export default function ProductDetailView({ id }) {
             </div>
 
             {/* Shipping & Returns Info */}
-            <div className="bg-white dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
+            <div className="bg-vintage-cream dark:bg-vintage-dark/30 rounded-lg p-6 border border-vintage-border dark:border-vintage-border/20">
               <h3 className="text-xl font-serif font-semibold text-vintage-dark dark:text-vintage-cream mb-4">
                 {t.shipping}
               </h3>
