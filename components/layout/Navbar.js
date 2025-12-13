@@ -91,19 +91,59 @@ export default function Navbar() {
         };
     }, [reduxUser, reduxRole]);
 
-    // Sync theme class with resolvedTheme
+    // Sync theme class with resolvedTheme - FORCE LIGHT MODE BY DEFAULT
     useEffect(() => {
         if (!mounted) return;
         
         const htmlEl = document.documentElement;
-        const currentResolvedTheme = resolvedTheme || theme;
         
-        if (currentResolvedTheme === 'dark') {
+        // Get current theme from localStorage directly
+        let storedTheme = null;
+        try {
+            storedTheme = localStorage.getItem('pham-nail-theme');
+        } catch (e) {
+            // localStorage not available
+        }
+        
+        // Force remove 'system' or invalid themes and set to light
+        if (!storedTheme || storedTheme === 'system' || storedTheme === '' || (storedTheme !== 'light' && storedTheme !== 'dark')) {
+            storedTheme = 'light';
+            setTheme('light');
+            try {
+                localStorage.setItem('pham-nail-theme', 'light');
+            } catch (e) {
+                console.warn('Could not save theme to localStorage:', e);
+            }
+        } else if (theme === 'system') {
+            // If next-themes returned 'system', force set to stored value or light
+            setTheme(storedTheme || 'light');
+        }
+        
+        // Only use resolvedTheme, ignore 'system' theme
+        const currentResolvedTheme = resolvedTheme || theme || 'light';
+        
+        // CRITICAL: Force apply theme - only dark if explicitly 'dark' in localStorage
+        if (storedTheme === 'dark' && currentResolvedTheme === 'dark') {
             htmlEl.classList.add('dark');
         } else {
+            // Force remove dark class for light mode
+            htmlEl.classList.remove('dark');
+            // Also ensure theme is set to light if not dark
+            if (storedTheme !== 'dark') {
+                setTheme('light');
+                try {
+                    localStorage.setItem('pham-nail-theme', 'light');
+                } catch (e) {
+                    // Ignore
+                }
+            }
+        }
+        
+        // Final check - force remove dark if not explicitly dark
+        if (storedTheme !== 'dark') {
             htmlEl.classList.remove('dark');
         }
-    }, [mounted, resolvedTheme, theme]);
+    }, [mounted, resolvedTheme, theme, setTheme]);
 
     // Also update when Redux state changes
     useEffect(() => {
